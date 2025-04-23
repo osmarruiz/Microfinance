@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="microfinance_unan@ep-bold-lab-a87cuajw-pooler.eastus2.azure.neon.tech" uuid="6b57534e-bde1-42cb-aaff-b53a3f3283a0">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ep-bold-lab-a87cuajw-pooler.eastus2.azure.neon.tech/microfinance_unan</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+  </component>
+</project>
