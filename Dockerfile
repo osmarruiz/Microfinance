@@ -27,5 +27,5 @@ ENTRYPOINT [ "dotnet", "watch", "run", "--urls", "http://*:8080" ]
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV ASPNETCORE_URLS=http://+:$(PORT)
+ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "Microfinance.dll"]
