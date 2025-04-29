@@ -1,21 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 
 namespace Microfinance.Models.Business;
 
-
+[Table("audit_log", Schema = "business")]
 public class AuditLog
 {
-    public long AuditId { get; set; }
+    [Key] [Column("audit_id")] public long AuditId { get; set; }
 
+    [Column("affected_table")]
+    [MaxLength(50)]
     public string AffectedTable { get; set; } = null!;
 
-    public int RecordId { get; set; }
+    [Column("record_id")] public int RecordId { get; set; }
 
-    public string UserId { get; set; } = null!;
+    [Column("action")] public AuditActionEnum Action { get; set; }
+    [MaxLength(200)] [Column("user_id")] public string UserId { get; set; } = null!;
 
-    public DateTime Timestamp { get; set; }
-    
+    [Column("log_time")] public DateTimeOffset LogTime { get; set; } = DateTimeOffset.Now;
+
     public IdentityUser User { get; set; } = null!;
+}
+
+public enum AuditActionEnum
+{
+    Create,
+    Update,
+    Delete,
+    Restore
 }
