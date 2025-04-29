@@ -1,23 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace Microfinance.Models.Business;
 
-public partial class CollectionManagement
+[Table("collection_management", Schema = "business")]
+public class CollectionManagement
 {
-    public int CollectionId { get; set; }
+    [Key] [Column("collection_id")] public int CollectionId { get; set; }
 
-    public int LoanId { get; set; }
+    [Column("loan_id")] public int LoanId { get; set; }
 
+    [Column("collector_id")]
+    [MaxLength(200)]
     public string CollectorId { get; set; } = null!;
 
-    public DateOnly? ManagementDate { get; set; }
+    [Column("management_date")] public DateTimeOffset ManagementDate { get; set; }
 
+    [Column("management_result")]
+    [MaxLength(200)]
     public string? ManagementResult { get; set; }
 
-    public string? Notes { get; set; }
+    [Column("notes")] [MaxLength(200)] public string? Notes { get; set; }
 
-    public bool? IsDeleted { get; set; }
+    [Column("is_deleted")] public bool IsDeleted { get; set; }
 
-    public virtual Loan Loan { get; set; } = null!;
+    // Relaciones
+    public Loan Loan { get; set; } = null!;
+
+    public IdentityUser Collector { get; set; } = null!;
 }

@@ -1,29 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Microfinance.Models.Business;
 
-public partial class Payment
+[Table("payments", Schema = "business")]
+public class Payment
 {
-    public int PaymentId { get; set; }
+    [Key] [Column("payment_id")] public int PaymentId { get; set; }
 
-    public int LoanId { get; set; }
+    [Column("installment_id")] public int InstallmentId { get; set; }
 
-    public int InstallmentId { get; set; }
+    [Column("payment_date")] public DateTimeOffset PaymentDate { get; set; } = DateTimeOffset.Now;
 
-    public DateTime PaymentDate { get; set; }
+    [Column("paid_amount")]
+    [Precision(10, 2)]
+    public decimal PaidAmount { get; set; }
 
-    public decimal? PaidAmount { get; set; }
+    [Column("reference")] [MaxLength(100)] public string? Reference { get; set; }
 
-    public string? PaymentMethod { get; set; }
+    [Column("collector_id")] [MaxLength(200)] public string CollectorId { get; set; } = null!;
 
-    public string? Reference { get; set; }
+    [Column("is_deleted")] public bool IsDeleted { get; set; }
 
-    public string CollectorId { get; set; } = null!;
-
-    public bool? IsDeleted { get; set; }
-
-    public virtual Installment Installment { get; set; } = null!;
-
-    public virtual Loan Loan { get; set; } = null!;
+    // Relaciones
+    public Installment Installment { get; set; } = null!;
+    
+    public IdentityUser Collector { get; set; } = null!;
 }
