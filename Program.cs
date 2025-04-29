@@ -1,4 +1,5 @@
 using Microfinance.Data;
+using Microfinance.Helpers;
 using Microfinance.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 builder.Services.AddControllersWithViews();
@@ -34,6 +36,13 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await IdentitySeeder.CrearRoles(services);
+}
 
 app.UseRouting();
 
