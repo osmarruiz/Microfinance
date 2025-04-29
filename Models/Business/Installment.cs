@@ -1,29 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Microfinance.Models.Business;
 
-public partial class Installment
+[Table("installments", Schema = "business")]
+public class Installment
 {
-    public int InstallmentId { get; set; }
+    [Key] [Column("installment_id")] public int InstallmentId { get; set; }
 
-    public int LoanId { get; set; }
+    [Column("loan_id")] public int LoanId { get; set; }
 
-    public int InstallmentNumber { get; set; }
+    [Column("installment_number")] public int InstallmentNumber { get; set; }
 
+    [Column("installment_amount")]
+    [Precision(10, 2)]
     public decimal InstallmentAmount { get; set; }
 
+    [Column("paid_amount")]
+    [Precision(10, 2)]
     public decimal PaidAmount { get; set; }
 
-    public decimal? LateFee { get; set; }
+    [Column("late_fee")]
+    [Precision(10, 2)]
+    public decimal LateFee { get; set; }
 
-    public DateTime DueDate { get; set; }
+    [Column("due_date")] public DateTimeOffset DueDate { get; set; }
 
-    public DateTime PaymentDate { get; set; }
+    [Column("payment_date")] public DateTimeOffset? PaymentDate { get; set; }
 
-    public bool? IsDeleted { get; set; }
+    [Column("installment_status")]
+    public InstallmentStatusEnum InstallmentStatus { get; set; } = InstallmentStatusEnum.Pendiente;
 
-    public virtual Loan Loan { get; set; } = null!;
+    [Column("is_deleted")] public bool IsDeleted { get; set; }
 
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    // Relaciones
+    public Loan Loan { get; set; } = null!;
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+}
+
+public enum InstallmentStatusEnum
+{
+    Pendiente,
+    Pagada,
+    Vencida
 }
