@@ -22,7 +22,7 @@ public class Customer
 
     [Column("email")] [MaxLength(100)] public string? Email { get; set; }
 
-    [Column("is_active")] public bool IsActive { get; set; }
+    [Column("is_active")] public bool IsActive { get; set; } = true;
 
     [Column("is_deleted")] public bool IsDeleted { get; set; }
 

@@ -20,10 +20,6 @@ namespace Microfinance.Migrations
                 .HasAnnotation("ProductVersion", "8.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "business", "audit_action_enum", new[] { "Create", "Update", "Delete", "Restore" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "business", "installment_status_enum", new[] { "Pendiente", "Pagada", "Vencida" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "business", "loan_status_enum", new[] { "Activo", "Vencido", "Pagado", "Cancelado" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "business", "payment_frequency_enum", new[] { "Diario", "Semanal", "Quincenal", "Mensual" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microfinance.Models.Business.AuditLog", b =>
@@ -35,8 +31,10 @@ namespace Microfinance.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("AuditId"));
 
-                    b.Property<int>("Action")
-                        .HasColumnType("business.audit_action_enum")
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("action");
 
                     b.Property<string>("AffectedTable")
@@ -196,8 +194,10 @@ namespace Microfinance.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("installment_number");
 
-                    b.Property<int>("InstallmentStatus")
-                        .HasColumnType("business.installment_status_enum")
+                    b.Property<string>("InstallmentStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("installment_status");
 
                     b.Property<bool>("IsDeleted")
@@ -270,12 +270,16 @@ namespace Microfinance.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
-                    b.Property<int>("LoanStatus")
-                        .HasColumnType("business.loan_status_enum")
+                    b.Property<string>("LoanStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("loan_status");
 
-                    b.Property<int>("PaymentFrequency")
-                        .HasColumnType("business.payment_frequency_enum")
+                    b.Property<string>("PaymentFrequency")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("payment_frequency");
 
                     b.Property<string>("SellerId")

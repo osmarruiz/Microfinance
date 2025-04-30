@@ -32,7 +32,8 @@ public class Installment
     [Column("payment_date")] public DateTimeOffset? PaymentDate { get; set; }
 
     [Column("installment_status")]
-    public InstallmentStatusEnum InstallmentStatus { get; set; } = InstallmentStatusEnum.Pendiente;
+    [MaxLength(20)]
+    public string InstallmentStatus { get; set; } = InstallmentStatusEnum.Pendiente;
 
     [Column("is_deleted")] public bool IsDeleted { get; set; }
 
@@ -41,9 +42,10 @@ public class Installment
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }
 
-public enum InstallmentStatusEnum
+
+public static class InstallmentStatusEnum
 {
-    Pendiente,
-    Pagada,
-    Vencida
+    public const string Pendiente = "Pendiente";
+    public const string Pagada = "Pagada";
+    public const string Vencida = "Vencida";
 }
