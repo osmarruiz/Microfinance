@@ -17,18 +17,18 @@ public class AuditLog
 
     [Column("record_id")] public int RecordId { get; set; }
 
-    [Column("action")] public AuditActionEnum Action { get; set; }
+    [Column("action")] [MaxLength(20)] public string Action { get; set; } = null!;
     [MaxLength(200)] [Column("user_id")] public string UserId { get; set; } = null!;
 
-    [Column("log_time")] public DateTimeOffset LogTime { get; set; } = DateTimeOffset.Now;
+    [Column("log_time")] public DateTimeOffset LogTime { get; set; } = DateTimeOffset.UtcNow;
 
     public IdentityUser User { get; set; } = null!;
 }
 
-public enum AuditActionEnum
+public static class AuditActionEnum
 {
-    Create,
-    Update,
-    Delete,
-    Restore
+    public const string Create = "Create";
+    public const string Update = "Update";
+    public const string Delete = "Delete";
+    public const string Restore = "Restore";
 }
