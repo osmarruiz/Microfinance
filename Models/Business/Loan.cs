@@ -32,9 +32,13 @@ public class Loan
 
     [Column("due_date")] public DateTimeOffset DueDate { get; set; }
 
-    [Column("payment_frequency")] public PaymentFrequencyEnum PaymentFrequency { get; set; }
+    [Column("payment_frequency")]
+    [MaxLength(20)]
+    public string PaymentFrequency { get; set; } = null!;
 
-    [Column("loan_status")] public LoanStatusEnum LoanStatus { get; set; } = LoanStatusEnum.Activo;
+    [Column("loan_status")]
+    [MaxLength(20)]
+    public string LoanStatus { get; set; } = LoanStatusEnum.Activo;
 
     [Column("is_deleted")] public bool IsDeleted { get; set; }
 
@@ -46,18 +50,18 @@ public class Loan
     public IdentityUser Seller { get; set; } = null!;
 }
 
-public enum PaymentFrequencyEnum
+public static class LoanStatusEnum
 {
-    Diario,
-    Semanal,
-    Quincenal,
-    Mensual
+    public const string Activo = "Activo";
+    public const string Vencido = "Vencido";
+    public const string Pagado = "Pagado";
+    public const string Cancelado = "Cancelado";
 }
 
-public enum LoanStatusEnum
+public static class PaymentFrequencyEnum
 {
-    Activo,
-    Vencido,
-    Pagado,
-    Cancelado
+    public const string Diario = "Diario";
+    public const string Semanal = "Semanal";
+    public const string Quincenal = "Quincenal";
+    public const string Mensual = "Mensual";
 }

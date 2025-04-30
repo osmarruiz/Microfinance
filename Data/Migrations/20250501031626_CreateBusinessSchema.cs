@@ -7,19 +7,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Microfinance.Migrations
 {
     /// <inheritdoc />
-    public partial class AddBusinessEntities : Migration
+    public partial class CreateBusinessSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
                 name: "business");
-
-            migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:Enum:business.audit_action_enum", "Create,Update,Delete,Restore")
-                .Annotation("Npgsql:Enum:business.installment_status_enum", "Pendiente,Pagada,Vencida")
-                .Annotation("Npgsql:Enum:business.loan_status_enum", "Activo,Vencido,Pagado,Cancelado")
-                .Annotation("Npgsql:Enum:business.payment_frequency_enum", "Diario,Semanal,Quincenal,Mensual");
 
             migrationBuilder.CreateTable(
                 name: "audit_log",
@@ -30,7 +24,7 @@ namespace Microfinance.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     affected_table = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     record_id = table.Column<int>(type: "integer", nullable: false),
-                    action = table.Column<int>(type: "business.audit_action_enum", nullable: false),
+                    action = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     user_id = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     log_time = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
@@ -80,8 +74,8 @@ namespace Microfinance.Migrations
                     term_months = table.Column<int>(type: "integer", nullable: false),
                     start_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     due_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    payment_frequency = table.Column<int>(type: "business.payment_frequency_enum", nullable: false),
-                    loan_status = table.Column<int>(type: "business.loan_status_enum", nullable: false),
+                    payment_frequency = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    loan_status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     is_deleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -148,7 +142,7 @@ namespace Microfinance.Migrations
                     late_fee = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
                     due_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     payment_date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    installment_status = table.Column<int>(type: "business.installment_status_enum", nullable: false),
+                    installment_status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     is_deleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -270,12 +264,6 @@ namespace Microfinance.Migrations
             migrationBuilder.DropTable(
                 name: "customers",
                 schema: "business");
-
-            migrationBuilder.AlterDatabase()
-                .OldAnnotation("Npgsql:Enum:business.audit_action_enum", "Create,Update,Delete,Restore")
-                .OldAnnotation("Npgsql:Enum:business.installment_status_enum", "Pendiente,Pagada,Vencida")
-                .OldAnnotation("Npgsql:Enum:business.loan_status_enum", "Activo,Vencido,Pagado,Cancelado")
-                .OldAnnotation("Npgsql:Enum:business.payment_frequency_enum", "Diario,Semanal,Quincenal,Mensual");
         }
     }
 }
