@@ -5,7 +5,8 @@
 
 #app setting json
 appsettings.Development.json
-appsettings.json
+
+.idea/*
 
 # User-specific files
 *.rsuser
