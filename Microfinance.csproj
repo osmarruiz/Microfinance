@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <hotReloadEnabled>true</hotReloadEnabled>
     <UserSecretsId>aspnet-Microfinance-1155c405-8eb0-4a87-9dee-2b0f35f9114f</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
