@@ -22,6 +22,13 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login"; // O la ruta de tu vista de login si no usas las vistas por defecto de Identity
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.SlidingExpiration = true;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -48,11 +55,13 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// ... el resto de tu configuración
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 app.Run();
