@@ -1,26 +1,60 @@
 ﻿@page
 @model LoginWithRecoveryCodeModel
 @{
-    ViewData["Title"] = "Recovery code verification";
+    ViewData["Title"] = "Verificación con código de recuperación";
 }
 
-<h1>@ViewData["Title"]</h1>
-<hr />
-<p>
-    You have requested to log in with a recovery code. This login will not be remembered until you provide
-    an authenticator app code at log in or disable 2FA and log in again.
-</p>
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
-                <label asp-for="Input.RecoveryCode" class="form-label"></label>
-                <span asp-validation-for="Input.RecoveryCode" class="text-danger"></span>
+<div class="page-header min-vh-100">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0 mx-auto">
+                <div class="card card-plain">
+                    <div class="card-header pb-0 text-start bg-gray-100">
+                        <h4 class="font-weight-bolder">Código de recuperación</h4>
+                        <p class="mb-0">
+                            Has solicitado iniciar sesión con un código de recuperación. Este inicio de sesión no será recordado 
+                            hasta que proporciones un código de aplicación autenticadora o desactives la autenticación en dos pasos.
+                        </p>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Código de recuperación</label>
+                                <input asp-for="Input.RecoveryCode" class="form-control form-control-lg" 
+                                       autocomplete="off" aria-required="true"
+                                       placeholder="Ingresa tu código de recuperación"/>
+                                <span asp-validation-for="Input.RecoveryCode" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">
+                                    Verificar y continuar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                        <p class="mb-1 text-sm mx-auto">
+                            <a asp-page="./LoginWith2fa" asp-route-returnUrl="@Model.ReturnUrl"
+                               class="text-primary text-gradient font-weight-bold">
+                                ← Volver a autenticación con código de verificación
+                            </a>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-        </form>
+            <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
+                <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden"
+                     style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signin-ill.jpg');
+                            background-size: cover;">
+                    <span class="mask bg-gradient-primary opacity-6"></span>
+                    <h4 class="mt-5 text-white font-weight-bolder position-relative">Acceso de Emergencia</h4>
+                    <p class="text-white position-relative">Utiliza tus códigos de recuperación cuando no tengas acceso a tu método de autenticación habitual.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -72,9 +72,39 @@ namespace Microfinance.Areas.Identity.Pages.Account
 
                 await _emailSender.SendEmailAsync(
                     Input.Email,
-                    "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
+                    "Restablecer su contraseña - Microfinance",
+                    $@"
+    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+        <h2 style='color: #2c3e50;'>Restablecimiento de contraseña</h2>
+        
+        <p style='font-size: 16px;'>Hemos recibido una solicitud para restablecer la contraseña de su cuenta.</p>
+        
+        <p style='font-size: 16px;'>Por favor, haga clic en el siguiente enlace para crear una nueva contraseña:</p>
+        
+        <div style='text-align: center; margin: 25px 0;'>
+            <a href='{HtmlEncoder.Default.Encode(callbackUrl)}' 
+               style='background-color: #3498db; 
+                      color: white; 
+                      padding: 12px 24px; 
+                      text-decoration: none; 
+                      border-radius: 4px;
+                      font-weight: bold;
+                      display: inline-block;'>
+               Restablecer contraseña
+            </a>
+        </div>
+        
+        <p style='font-size: 14px; color: #7f8c8d;'>
+            Si no solicitó este cambio, puede ignorar este mensaje. 
+            El enlace expirará en 24 horas por motivos de seguridad.
+        </p>
+        
+        <p style='font-size: 14px; color: #7f8c8d;'>
+            Atentamente,<br>
+            El equipo de Microfinance
+        </p>
+    </div>
+    ");
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
