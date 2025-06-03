@@ -18,7 +18,9 @@ namespace Microfinance.Areas.Identity.Pages.Account.Manage
         private readonly ILogger<TwoFactorAuthenticationModel> _logger;
 
         public TwoFactorAuthenticationModel(
-            UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
+            UserManager<IdentityUser> userManager, 
+            SignInManager<IdentityUser> signInManager, 
+            ILogger<TwoFactorAuthenticationModel> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -26,33 +28,38 @@ namespace Microfinance.Areas.Identity.Pages.Account.Manage
         }
 
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
+        ///     Esta API soporta la infraestructura de UI por defecto de ASP.NET Core Identity
+        ///     y no está diseñada para ser usada directamente desde tu código.
+        ///     Esta API puede cambiar o eliminarse en futuras versiones.
         /// </summary>
         public bool HasAuthenticator { get; set; }
 
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
+        ///     Esta API soporta la infraestructura de UI por defecto de ASP.NET Core Identity
+        ///     y no está diseñada para ser usada directamente desde tu código.
+        ///     Esta API puede cambiar o eliminarse en futuras versiones.
         /// </summary>
         public int RecoveryCodesLeft { get; set; }
 
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
+        ///     Esta API soporta la infraestructura de UI por defecto de ASP.NET Core Identity
+        ///     y no está diseñada para ser usada directamente desde tu código.
+        ///     Esta API puede cambiar o eliminarse en futuras versiones.
         /// </summary>
         [BindProperty]
         public bool Is2faEnabled { get; set; }
 
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
+        ///     Esta API soporta la infraestructura de UI por defecto de ASP.NET Core Identity
+        ///     y no está diseñada para ser usada directamente desde tu código.
+        ///     Esta API puede cambiar o eliminarse en futuras versiones.
         /// </summary>
         public bool IsMachineRemembered { get; set; }
 
         /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
+        ///     Esta API soporta la infraestructura de UI por defecto de ASP.NET Core Identity
+        ///     y no está diseñada para ser usada directamente desde tu código.
+        ///     Esta API puede cambiar o eliminarse en futuras versiones.
         /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
@@ -62,7 +69,7 @@ namespace Microfinance.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"No se pudo cargar el usuario con ID '{_userManager.GetUserId(User)}'.");
             }
 
             HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null;
@@ -78,11 +85,11 @@ namespace Microfinance.Areas.Identity.Pages.Account.Manage
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                return NotFound($"No se pudo cargar el usuario con ID '{_userManager.GetUserId(User)}'.");
             }
 
             await _signInManager.ForgetTwoFactorClientAsync();
-            StatusMessage = "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.";
+            StatusMessage = "El navegador actual ha sido olvidado. Cuando inicies sesión nuevamente desde este navegador, se te pedirá tu código de autenticación de dos factores.";
             return RedirectToPage();
         }
     }

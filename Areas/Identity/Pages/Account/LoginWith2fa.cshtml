@@ -1,38 +1,73 @@
 ﻿@page
 @model LoginWith2faModel
 @{
-    ViewData["Title"] = "Two-factor authentication";
+    ViewData["Title"] = "Autenticación de dos factores";
 }
 
-<h1>@ViewData["Title"]</h1>
-<hr />
-<p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
-<div class="row">
-    <div class="col-md-4">
-        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-            <input asp-for="RememberMe" type="hidden" />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.TwoFactorCode" class="form-control" autocomplete="off" />
-                <label asp-for="Input.TwoFactorCode" class="form-label"></label>
-                <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
+<div class="page-header min-vh-100">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0 mx-auto">
+                <div class="card card-plain">
+                    <div class="card-header pb-0 text-start bg-gray-100">
+                        <h4 class="font-weight-bolder">Verificación de seguridad</h4>
+                        <p class="mb-0">Tu inicio de sesión está protegido con una aplicación de autenticación. Ingresa tu código de verificación.</p>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                            <input asp-for="RememberMe" type="hidden" />
+                            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Código de autenticación</label>
+                                <input asp-for="Input.TwoFactorCode" class="form-control form-control-lg" 
+                                       autocomplete="off" aria-required="true"
+                                       placeholder="Ingresa tu código de 6 dígitos"/>
+                                <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="rememberMachine" asp-for="Input.RememberMachine">
+                                <label class="form-check-label" for="rememberMachine">
+                                    Recordar este dispositivo
+                                </label>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">
+                                    Verificar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                        <p class="mb-1 text-sm mx-auto">
+                            <a id="recovery-code-login" asp-page="./LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl"
+                               class="text-primary text-gradient font-weight-bold">
+                                ¿No tienes acceso a tu dispositivo de autenticación? Ingresa con un código de recuperación
+                            </a>
+                        </p>
+                        <p class="mb-1 text-sm mx-auto">
+                            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl"
+                               class="text-primary text-gradient font-weight-bold">
+                                ← Volver a inicio
+                            </a>
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="checkbox mb-3">
-                <label asp-for="Input.RememberMachine" class="form-label">
-                    <input asp-for="Input.RememberMachine" />
-                    @Html.DisplayNameFor(m => m.Input.RememberMachine)
-                </label>
+            <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
+                <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden"
+                     style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signin-ill.jpg');
+                            background-size: cover;">
+                    <span class="mask bg-gradient-primary opacity-6"></span>
+                    <h4 class="mt-5 text-white font-weight-bolder position-relative">Seguridad Avanzada</h4>
+                    <p class="text-white position-relative">Protege tu cuenta con nuestra capa adicional de seguridad mediante autenticación de dos factores.</p>
+                </div>
             </div>
-            <div>
-                <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
-<p>
-    Don't have access to your authenticator device? You can
-    <a id="recovery-code-login" asp-page="./LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl">log in with a recovery code</a>.
-</p>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

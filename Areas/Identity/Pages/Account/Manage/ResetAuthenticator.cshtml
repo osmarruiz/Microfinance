@@ -1,24 +1,56 @@
 ﻿@page
 @model ResetAuthenticatorModel
 @{
-    ViewData["Title"] = "Reset authenticator key";
+    ViewData["Title"] = "Restablecer clave de autenticación";
     ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
-<partial name="_StatusMessage" for="StatusMessage" />
-<h3>@ViewData["Title"]</h3>
-<div class="alert alert-warning" role="alert">
-    <p>
-        <span class="glyphicon glyphicon-warning-sign"></span>
-        <strong>If you reset your authenticator key your authenticator app will not work until you reconfigure it.</strong>
-    </p>
-    <p>
-        This process disables 2FA until you verify your authenticator app.
-        If you do not complete your authenticator app configuration you may lose access to your account.
-    </p>
+<div class="page-header min-vh-80">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 col-lg-7 col-md-9 d-flex flex-column mx-lg-0 mx-auto">
+                <div class="card card-plain">
+                    <div class="card-header pb-0 text-start bg-gray-100">
+                        <h4 class="font-weight-bolder">@ViewData["Title"]</h4>
+                        <p class="mb-0">Restablecimiento de seguridad para tu autenticador</p>
+                    </div>
+                    <div class="card-body">
+                        <partial name="_StatusMessage" for="StatusMessage" />
+                        
+                        <div class="alert alert-warning" role="alert">
+                            <p>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Si restableces tu clave de autenticación, tu aplicación no funcionará hasta que la reconfigure.</strong>
+                            </p>
+                            <p>
+                                Este proceso desactiva la autenticación en dos factores hasta que verifiques tu aplicación.
+                                Si no completas la configuración, podrías perder acceso a tu cuenta.
+                            </p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <form id="reset-authenticator-form" method="post">
+                                <button id="reset-authenticator-button" class="btn btn-danger" type="submit">
+                                    Restablecer clave de autenticación
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
+                <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden"
+                     style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signin-ill.jpg');
+                            background-size: cover;">
+                    <span class="mask bg-gradient-primary opacity-6"></span>
+                    <h4 class="mt-5 text-white font-weight-bolder position-relative">Seguridad de Cuenta</h4>
+                    <p class="text-white position-relative">Protección avanzada para tus credenciales</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <form id="reset-authenticator-form" method="post">
-        <button id="reset-authenticator-button" class="btn btn-danger" type="submit">Reset authenticator key</button>
-    </form>
-</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
