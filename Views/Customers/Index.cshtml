@@ -1,71 +1,61 @@
 @model IEnumerable<Microfinance.Models.Business.Customer>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Clientes";
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4 ">
+    
+    <h1 class="mb-0">Clientes</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdCard)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PhoneNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Address)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsActive)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDeleted)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdCard)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PhoneNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Address)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsActive)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsDeleted)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CustomerId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CustomerId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CustomerId">Delete</a>
-            </td>
-        </tr>
+    <a class="mb-0 btn btn-primary" asp-action="Create">Registrar un cliente</a>
+  
+</div>
+
+@* Contenedor para AG-Grid *@
+<div id="customerGrid" class="ag-theme-alpine" style="height: 600px"></div>
+
+@section Scripts {
+    <script>
+        // Función para crear el renderizador de celdas para las acciones (Edit, Details, Delete)
+        function actionsCellRenderer(params) {
+            const customerId = params.data.customerId; // Asume que CustomerId es la propiedad clave en tu modelo
+            return `
+                <a class="link-primary" href="/Customers/Edit/${customerId}">Editar</a> |
+                <a class="link-secondary" href="/Customers/Details/${customerId}">Detalles</a> |
+                <a class="link-danger" href="/Customers/Delete/${customerId}">Borrar</a>
+            `;
+        }
+
+        // Definición de las columnas de la grilla AG-Grid
+        const columnDefs = [
+
+            { headerName: "ID Cliente", field: "customerId", sortable: true, filter: true }, 
+            { headerName: "Nombre Completo", field: "fullName", sortable: true, filter: true },
+            { headerName: "Cédula", field: "idCard", sortable: true, filter: true },
+            { headerName: "Teléfono", field: "phoneNumber", sortable: true, filter: true }, 
+            { headerName: "Dirección", field: "address", sortable: true, filter: true },
+            { headerName: "Correo Electrónico", field: "email", sortable: true, filter: true }, 
+            { headerName: "Activo", field: "isActive", sortable: true },
+            {
+                headerName: "Acciones",
+                field: "actions",
+                cellRenderer: actionsCellRenderer, 
+                sortable: false, 
+                filter: false 
+            }
+        ];
+        
+        const gridOptions = getGridOptions(columnDefs, @Html.Raw(Json.Serialize(Model)));
+
+        const gridDiv = document.querySelector('#customerGrid');
+
+        if (gridDiv) {
+            const api = agGrid.createGrid(gridDiv, gridOptions);
+
+            
+        } else {
+            console.error('El elemento #customerGrid no fue encontrado en el DOM.');
+        }
+    </script>
 }
-    </tbody>
-</table>
