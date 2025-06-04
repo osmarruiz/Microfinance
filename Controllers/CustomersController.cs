@@ -86,7 +86,8 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CustomerId,FullName,IdCard,PhoneNumber,Address,Email,IsActive,IsDeleted")] Customer customer)
+        public async Task<IActionResult> Edit(int id, 
+            [Bind("CustomerId,FullName,IdCard,PhoneNumber,Address,Email,IsActive")] Customer customer)
         {
             if (id != customer.CustomerId)
             {
@@ -97,8 +98,31 @@ namespace Microfinance.Controllers
             {
                 try
                 {
-                    _context.Update(customer);
+                    // Obtener el cliente existente SIN rastreo (AsNoTracking)
+                    var existingCustomer = await _context.Customers
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(c => c.CustomerId == id);
+
+                    if (existingCustomer == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Adjuntar el cliente modificado al contexto
+                    _context.Attach(customer);
+
+                    // Marcar como modificado SOLO las propiedades que queremos actualizar
+                    _context.Entry(customer).Property(x => x.FullName).IsModified = true;
+                    _context.Entry(customer).Property(x => x.IdCard).IsModified = true;
+                    _context.Entry(customer).Property(x => x.PhoneNumber).IsModified = true;
+                    _context.Entry(customer).Property(x => x.Address).IsModified = true;
+                    _context.Entry(customer).Property(x => x.Email).IsModified = true;
+                    _context.Entry(customer).Property(x => x.IsActive).IsModified = true;
+
+                    // IsDeleted NO se marca como modificado, por lo que no se actualizará
+
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -111,7 +135,6 @@ namespace Microfinance.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
             return View(customer);
         }

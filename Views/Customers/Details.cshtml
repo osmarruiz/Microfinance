@@ -1,60 +1,84 @@
 @model Microfinance.Models.Business.Customer
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles del Cliente";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Customer</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FullName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FullName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdCard)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdCard)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PhoneNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PhoneNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDeleted)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDeleted)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.CustomerId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0"><i class="fas fa-user-tie me-2"></i>Detalles del Cliente</h2>
+                <div>
+                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary") me-2">
+                        @(Model.IsActive ? "Activo" : "Inactivo")
+                    </span>
+                    @if(Model.IsDeleted) {
+                        <span class="badge bg-danger">Eliminado</span>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <!-- Columna Izquierda - Información Básica -->
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2"><i class="fas fa-id-card me-2"></i>Información Personal</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4 text-muted">Nombre Completo:</dt>
+                            <dd class="col-sm-8">@Model.FullName</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Cédula/RUC:</dt>
+                            <dd class="col-sm-8">@Model.IdCard</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Teléfono:</dt>
+                            <dd class="col-sm-8">@Model.PhoneNumber</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                <!-- Columna Derecha - Información Adicional -->
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2"><i class="fas fa-map-marker-alt me-2"></i>Información de Contacto</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4 text-muted">Dirección:</dt>
+                            <dd class="col-sm-8">@Model.Address</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Correo Electrónico:</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Estado:</dt>
+                            <dd class="col-sm-8">
+                                @if(Model.IsActive) {
+                                    <span class="badge bg-success">Activo</span>
+                                } else {
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Acciones -->
+            <div class="d-flex flex-column flex-md-row justify-content-between mt-4 pt-3 border-top">
+                <a asp-action="Index" class="btn btn-outline-secondary  ">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+                </a>
+                <div class="d-flex flex-column flex-md-row gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Editar Cliente
+                    </a>
+                    @if(!Model.IsDeleted) {
+                        <a asp-action="Delete" asp-route-id="@Model.CustomerId" class="btn btn-outline-danger">
+                            <i class="fas fa-trash-alt me-2"></i>Eliminar
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

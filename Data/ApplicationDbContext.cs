@@ -188,10 +188,9 @@ public class ApplicationDbContext : IdentityDbContext
     var now = DateTime.UtcNow;
     var auditEntries = new List<(EntityEntry Entry, AuditLog Log)>();
 
-    // Recolectamos los logs sin el RecordId
     foreach (var entry in ChangeTracker.Entries())
     {
-        if (entry.Entity is AuditLog ||
+        if (entry.Entity is AuditLog || 
             entry.Entity is IdentityUser ||
             entry.State == EntityState.Detached ||
             entry.State == EntityState.Unchanged ||
@@ -202,7 +201,6 @@ public class ApplicationDbContext : IdentityDbContext
         }
 
         var tableName = entry.Metadata.GetTableName();
-
         string action;
         var isDeletedProp = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "IsDeleted");
 
@@ -211,18 +209,33 @@ public class ApplicationDbContext : IdentityDbContext
             var wasDeleted = (bool)isDeletedProp.OriginalValue;
             var isNowDeleted = (bool)isDeletedProp.CurrentValue;
 
-            action = isNowDeleted ? AuditActionEnum.Delete : AuditActionEnum.Restore;
-        }
-        else
-        {
-            action = entry.State switch
+            var changedProperties = entry.Properties
+                .Where(p => p.IsModified && p.Metadata.Name != "IsDeleted")
+                .ToList();
+
+            if (changedProperties.Count == 0)
             {
-                EntityState.Added => AuditActionEnum.Create,
-                EntityState.Modified => AuditActionEnum.Update,
-                EntityState.Deleted => AuditActionEnum.Delete,
-                _ => throw new NotSupportedException()
-            };
+                action = isNowDeleted ? AuditActionEnum.Delete : AuditActionEnum.Restore;
+                var auditLog = new AuditLog
+                {
+                    AffectedTable = tableName,
+                    Action = action,
+                    UserId = userId,
+                    LogTime = now
+                };
+                
+                auditEntries.Add((entry, auditLog));
+                continue;
+            }
         }
+
+        action = entry.State switch
+        {
+            EntityState.Added => AuditActionEnum.Create,
+            EntityState.Modified => AuditActionEnum.Update,
+            EntityState.Deleted => AuditActionEnum.Delete,
+            _ => throw new NotSupportedException()
+        };
 
         var log = new AuditLog
         {
@@ -230,16 +243,13 @@ public class ApplicationDbContext : IdentityDbContext
             Action = action,
             UserId = userId,
             LogTime = now
-            // RecordId se asignará después
         };
 
         auditEntries.Add((entry, log));
     }
 
-    // Guardar cambios principales primero (para obtener los IDs reales)
     var result = await base.SaveChangesAsync(cancellationToken);
 
-    // Asignar los RecordIds ahora que ya fueron generados por la base de datos
     foreach (var (entry, log) in auditEntries)
     {
         var primaryKey = entry.Properties.FirstOrDefault(p => p.Metadata.IsPrimaryKey());
@@ -247,11 +257,9 @@ public class ApplicationDbContext : IdentityDbContext
         {
             log.RecordId = intValue;
         }
-
         AuditLogs.Add(log);
     }
 
-    // Guardar los logs de auditoría
     if (auditEntries.Any())
     {
         await base.SaveChangesAsync(cancellationToken);
