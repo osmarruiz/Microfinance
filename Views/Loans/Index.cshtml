@@ -1,95 +1,92 @@
 @model IEnumerable<Microfinance.Models.Business.Loan>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Préstamos";
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Préstamos</h1>
+    <a class="btn btn-primary" asp-action="Create">
+        <i class="fas fa-plus"></i> Nuevo Préstamo
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Amount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CurrentBalance)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.InterestRate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TermMonths)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StartDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DueDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentFrequency)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LoanStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDeleted)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Customer)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Seller)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Amount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CurrentBalance)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InterestRate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TermMonths)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DueDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentFrequency)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LoanStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsDeleted)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Customer.CustomerId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Seller.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.LoanId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.LoanId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.LoanId">Delete</a>
-            </td>
-        </tr>
+<div id="loanGrid" class="ag-theme-alpine" style="height: 700px;"></div>
+
+@section Scripts {
+    <script>
+        function actionsCellRenderer(params) {
+            const loanId = params.data.loanId;
+            return `
+                <a class="link-primary" href="/Loans/Edit/${loanId}">Editar</a> |
+                <a class="link-secondary" href="/Loans/Details/${loanId}">Detalles</a> |
+                <a class="link-danger" href="/Loans/Delete/${loanId}">Borrar</a>
+            `;
+        }
+
+        const columnDefs = [
+            {
+                headerName: "Monto",
+                field: "amount",
+                filter: 'agNumberColumnFilter',
+                valueFormatter: params => `C$${params.value.toLocaleString('es-NI')}`
+            },
+            {
+                headerName: "Saldo Actual",
+                field: "currentBalance",
+                filter: 'agNumberColumnFilter',
+                valueFormatter: params => `C$${params.value.toLocaleString('es-NI')}`
+            },
+            {
+                headerName: "Vencimiento",
+                field: "dueDate",
+                filter: 'agDateColumnFilter',
+                valueFormatter: params => new Date(params.value).toLocaleDateString()
+            },
+            {
+                headerName: "Frecuencia Pago",
+                field: "paymentFrequency"
+            },
+            {
+                headerName: "Estado",
+                field: "loanStatus",
+                cellRenderer: params => {
+                    const status = params.value;
+                    let badgeClass = 'bg-secondary';
+                    if (status === 'Active') badgeClass = 'bg-success';
+                    if (status === 'Late') badgeClass = 'bg-warning text-dark';
+                    if (status === 'Default') badgeClass = 'bg-danger';
+                    return `<span class="badge ${badgeClass}">${status}</span>`;
+                }
+            },
+            {
+                headerName: "Cliente",
+                field: "customer.fullName",
+            },
+            {
+                headerName: "Vendedor",
+                field: "seller.userName",
+            },
+            {
+                headerName: "Acciones",
+                cellRenderer: actionsCellRenderer,
+                width: 150,
+                sortable: false,
+                filter: false
+            }
+        ];
+        
+        console.log(@Html.Raw(Json.Serialize(Model)));
+        const gridOptions = getGridOptions(columnDefs, @Html.Raw(Json.Serialize(Model)));
+
+        const gridDiv = document.querySelector('#loanGrid');
+
+        if (gridDiv) {
+            const api = agGrid.createGrid(gridDiv, gridOptions);
+
+
+        } else {
+            console.error('El elemento #loanGrid no fue encontrado en el DOM.');
+        }
+    </script>
 }
-    </tbody>
-</table>

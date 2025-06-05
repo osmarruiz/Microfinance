@@ -10,44 +10,67 @@ namespace Microfinance.Models.Business;
 [Table("loans", Schema = "business")]
 public class Loan
 {
-    [Key] [Column("loan_id")] public int LoanId { get; set; }
+    [Key] 
+    [Column("loan_id")] 
+    public int LoanId { get; set; }
 
-    [Column("customer_id")] public int CustomerId { get; set; }
+    [Required(ErrorMessage = "El cliente es requerido")]
+    [Column("customer_id")] 
+    public int CustomerId { get; set; }
 
-    [MaxLength(200)] [Column("seller_id")] public string SellerId { get; set; } = null!;
+    [Required(ErrorMessage = "El vendedor es requerido")]
+    [MaxLength(200, ErrorMessage = "El ID del vendedor es demasiado largo")] 
+    [Column("seller_id")] 
+    public string SellerId { get; set; } = null!;
 
-    [Column("amount")] [Precision(10, 2)] public decimal Amount { get; set; }
+    [Required(ErrorMessage = "El monto es requerido")]
+    [Range(4000.00, 30000.00, ErrorMessage = "El monto debe estar entre {1} y {2}")]
+    [Column("amount")] 
+    [Precision(10, 2)] 
+    public decimal Amount { get; set; }
 
+    [Required(ErrorMessage = "El balance actual es requerido")]
+    [Range(0, double.MaxValue, ErrorMessage = "El balance no puede ser negativo")]
     [Column("current_balance")]
     [Precision(10, 2)]
     public decimal CurrentBalance { get; set; }
 
+    [Required(ErrorMessage = "La tasa de interés es requerida")]
+    [Range(0, 100, ErrorMessage = "La tasa de interés debe estar entre 0 y 100")]
     [Column("interest_rate")]
     [Precision(10, 2)]
     public decimal InterestRate { get; set; }
 
-    [Column("term_months")] public int TermMonths { get; set; }
+    [Required(ErrorMessage = "El plazo en meses es requerido")]
+    [Range(1, int.MaxValue, ErrorMessage = "El plazo debe ser de al menos 1 mes")]
+    [Column("term_months")] 
+    public int TermMonths { get; set; }
 
-    [Column("start_date")] public DateTimeOffset StartDate { get; set; } = DateTimeOffset.Now;
+    [Column("start_date")] 
+    public DateTimeOffset StartDate { get; set; } = DateTimeOffset.UtcNow;
 
-    [Column("due_date")] public DateTimeOffset DueDate { get; set; }
+    [Required(ErrorMessage = "La fecha de vencimiento es requerida")]
+    [Column("due_date")] 
+    public DateTimeOffset DueDate { get; set; }
 
-    [Column("payment_frequency")]
+    [Required(ErrorMessage = "La frecuencia de pago es requerida")]
     [MaxLength(20)]
+    [Column("payment_frequency")]
     public string PaymentFrequency { get; set; } = null!;
 
-    [Column("loan_status")]
     [MaxLength(20)]
+    [Column("loan_status")]
     public string LoanStatus { get; set; } = LoanStatusEnum.Activo;
 
-    [Column("is_deleted")] public bool IsDeleted { get; set; }
+    [Column("is_deleted")] 
+    public bool IsDeleted { get; set; } = false;
 
     // Relaciones
-    public Customer Customer { get; set; } = null!;
-    public ICollection<Installment> Installments { get; set; } = new List<Installment>();
-    public ICollection<CollectionManagement> CollectionManagements { get; set; } = new List<CollectionManagement>();
+    public Customer? Customer { get; set; } = null!;
+    public ICollection<Installment>? Installments { get; set; } = new List<Installment>();
+    public ICollection<CollectionManagement>? CollectionManagements { get; set; } = new List<CollectionManagement>();
 
-    public IdentityUser Seller { get; set; } = null!;
+    public IdentityUser? Seller { get; set; } = null!;
 }
 
 public static class LoanStatusEnum

@@ -1,71 +1,147 @@
 @model Microfinance.Models.Business.Loan
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Nuevo Préstamo";
 }
 
-<h1>Create</h1>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-hand-holding-usd me-2"></i>Registrar Nuevo Préstamo
+            </h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-<h4>Loan</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="CustomerId" class="control-label"></label>
-                <select asp-for="CustomerId" class ="form-control" asp-items="ViewBag.CustomerId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="SellerId" class="control-label"></label>
-                <select asp-for="SellerId" class ="form-control" asp-items="ViewBag.SellerId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" />
-                <span asp-validation-for="Amount" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CurrentBalance" class="control-label"></label>
-                <input asp-for="CurrentBalance" class="form-control" />
-                <span asp-validation-for="CurrentBalance" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="InterestRate" class="control-label"></label>
-                <input asp-for="InterestRate" class="form-control" />
-                <span asp-validation-for="InterestRate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TermMonths" class="control-label"></label>
-                <input asp-for="TermMonths" class="form-control" />
-                <span asp-validation-for="TermMonths" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DueDate" class="control-label"></label>
-                <input asp-for="DueDate" class="form-control" />
-                <span asp-validation-for="DueDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="PaymentFrequency" class="control-label"></label>
-                <select asp-for="PaymentFrequency" class="form-control"></select>
-                <span asp-validation-for="PaymentFrequency" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LoanStatus" class="control-label"></label>
-                <select asp-for="LoanStatus" class="form-control"></select>
-                <span asp-validation-for="LoanStatus" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+                <div class="row g-3">
+                    <!-- Cliente -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId" required>
+                                <option value="">Seleccione un cliente</option>
+                            </select>
+                            <label>Cliente</label>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Campo de Vendedor (solo visualización) -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" 
+                                   value="@ViewData["CurrentSellerName"]" 
+                                   readonly />
+                            <label>Vendedor</label>
+                            <span asp-validation-for="SellerId" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="form-floating mb-3">
+                        <input type="hidden" asp-for="SellerId" value="@ViewData["CurrentSellerId"]" />
+                        </div>
+
+                        <!-- Monto -->
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Amount" class="form-control" placeholder=" " required
+                                       type="number" step="0.01"/>
+                                <label>Monto del préstamo</label>
+                                <span asp-validation-for="Amount" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+
+                        <!-- Tasa de Interés -->
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="InterestRate" class="form-control" placeholder=" " required
+                                       type="number" step="0.01" min="0" max="100" readonly/>
+                                <label>Tasa de interés (%)</label>
+                                <span asp-validation-for="InterestRate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Plazo en Meses -->
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <input asp-for="TermMonths" class="form-control" placeholder=" " required value="1" max="3"
+                                       type="number" min="1"/>
+                                <label>Plazo (meses)</label>
+                                <span asp-validation-for="TermMonths" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+
+                        <!-- Frecuencia de Pago -->
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <select asp-for="PaymentFrequency" class="form-control" required>
+                                    <option value="">Seleccione frecuencia</option>
+                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Diario">Diario</option>
+                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Semanal">Semanal</option>
+                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Quincenal">Quincenal</option>
+                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Mensual">Mensual</option>
+                                </select>
+                                <label>Frecuencia de pago</label>
+                                <span asp-validation-for="PaymentFrequency" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Fecha de Vencimiento -->
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <input asp-for="DueDate" class="form-control" placeholder=" " required
+                                       type="date" readonly id="dueDateInput"/>
+                                <label>Fecha de vencimiento</label>
+                                <span asp-validation-for="DueDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Estado del Préstamo (oculto, valor por defecto) -->
+                        <input type="hidden" asp-for="LoanStatus" value="@Microfinance.Models.Business.LoanStatusEnum.Activo"/>
+                        <input type="hidden" asp-for="IsDeleted" value="false"/>
+                    </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-2"></i>Registrar Préstamo
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const termMonthsInput = document.getElementById('TermMonths');
+            const dueDateInput = document.getElementById('dueDateInput');
+
+            termMonthsInput.addEventListener('change', function() {
+                const termMonths = parseInt(this.value);
+                if (termMonths > 0) {
+                    const today = new Date();
+                    const dueDate = new Date();
+                    dueDate.setMonth(today.getMonth() + termMonths);
+
+                    // Formato YYYY-MM-DD (ISO para input type="date")
+                    dueDateInput.value = dueDate.toISOString().split('T')[0];
+                }
+            });
+
+            // Dispara el evento al cargar
+            if (termMonthsInput.value > 0) {
+                termMonthsInput.dispatchEvent(new Event('change'));
+            }
+});
+    </script>
 }
