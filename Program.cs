@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microfinance.Data;
 using Microfinance.Helpers;
 using Microfinance.Services;
@@ -12,6 +13,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options => 
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
