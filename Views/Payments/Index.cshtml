@@ -1,65 +1,115 @@
 @model IEnumerable<Microfinance.Models.Business.Payment>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Pagos"; // Cambiado a "Pagos" para ser más específico
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Listado de Pagos</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaidAmount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Reference)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDeleted)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Installment)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Collector)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaidAmount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Reference)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsDeleted)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Installment.InstallmentId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Collector.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.PaymentId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.PaymentId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.PaymentId">Delete</a>
-            </td>
-        </tr>
+    <a asp-action="Create" class="mb-0 btn btn-primary">Registrar Pago</a>
+</div>
+
+<div id="paymentGrid" class="ag-theme-alpine" style="height: 700px; width: 100%;"></div>
+
+@section Scripts {
+    <script>
+        // Función para convertir UTC a local y formatear como fecha
+        function utcToLocalDateString(utcDateString) {
+            if (!utcDateString) return '';
+            try {
+                // Asume que utcDateString es un string ISO 8601 con o sin 'Z' o offset
+                const date = new Date(utcDateString);
+                // Si la fecha es inválida, se devuelve un string vacío o un error
+                if (isNaN(date.getTime())) {
+                    return '';
+                }
+                // Formatea la fecha en el formato local deseado (ej. DD/MM/YYYY)
+                return date.toLocaleDateString('es-ES'); // O 'es-NI' para Nicaragua
+            } catch (e) {
+                console.error("Error al parsear fecha UTC:", utcDateString, e);
+                return '';
+            }
+        }
+
+        // Definición de columnas para la tabla de Pagos
+        const paymentColumnDefs = [
+            {
+                headerName: "Fecha de Pago",
+                field: "paymentDate",
+                // Usar la función helper para asegurar el formato local
+                valueFormatter: params => utcToLocalDateString(params.value),
+                filter: 'agDateColumnFilter',
+                width: 150
+            },
+            {
+                headerName: "Monto Pagado",
+                field: "paidAmount",
+                // Formateo para Córdobas Nicaragüenses
+                valueFormatter: params => `C$${params.value.toLocaleString('es-NI', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`,
+                width: 150,
+                cellClass: 'text-end',
+                type: 'numericColumn'
+            },
+            {
+                headerName: "Referencia",
+                field: "reference",
+                width: 180
+            },
+            {
+                headerName: "Cuota N°",
+                field: "installment.installmentId", // Asumiendo que Payment tiene una propiedad Installment
+                valueGetter: params => params.data.installment?.installmentNumber || '', // Mostrar el número de cuota
+                width: 100
+            },
+            {
+                headerName: "Cobrador (ID)",
+                field: "collector.id", // Asumiendo que Payment tiene una propiedad Collector
+                valueGetter: params => params.data.collector?.fullName || params.data.collector?.id || '', // Mostrar el nombre o ID del cobrador
+                width: 150
+            },
+            {
+                headerName: "¿Eliminado?",
+                field: "isDeleted",
+                cellRenderer: params => params.value ? 'Sí' : 'No', // Convertir booleano a texto
+                width: 100,
+                filter: true // Habilitar filtro para booleanos (se mostrará como checkbox o lista)
+            },
+            {
+                headerName: "Acciones",
+                cellRenderer: params => `
+                    <div class="d-flex justify-content-center">
+                        <a href="/Payment/Edit/${params.data.paymentId}" class="btn btn-sm btn-outline-warning me-1" title="Editar">
+                            <i class="bi bi-pencil"></i> {{-- Icono de lápiz --}}
+                        </a>
+                        <a href="/Payment/Details/${params.data.paymentId}" class="btn btn-sm btn-outline-info me-1" title="Detalles">
+                            <i class="bi bi-info-circle"></i> {{-- Icono de información --}}
+                        </a>
+                        <a href="/Payment/Delete/${params.data.paymentId}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i> {{-- Icono de bote de basura --}}
+                        </a>
+                    </div>`,
+                width: 180,
+                sortable: false,
+                filter: false
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const paymentGridDiv = document.querySelector('#paymentGrid');
+
+            if (paymentGridDiv) {
+                // Pasa los datos del modelo C# al JavaScript
+                const rowData = @Html.Raw(Json.Serialize(Model));
+                const paymentGridOptions = getGridOptions(paymentColumnDefs, rowData);
+                agGrid.createGrid(paymentGridDiv, paymentGridOptions);
+            } else {
+                console.error('El elemento #paymentGrid no fue encontrado en el DOM.');
+            }
+        });
+    </script>
 }
-    </tbody>
-</table>

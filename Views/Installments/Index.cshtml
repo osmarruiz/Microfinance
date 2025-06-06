@@ -1,83 +1,103 @@
 @model IEnumerable<Microfinance.Models.Business.Installment>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Cuotas";
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Listado de Cuotas</h1>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.InstallmentNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.InstallmentAmount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaidAmount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LateFee)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DueDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.InstallmentStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDeleted)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Loan)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.InstallmentNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InstallmentAmount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaidAmount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LateFee)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DueDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InstallmentStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsDeleted)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Loan.LoanId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.InstallmentId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.InstallmentId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.InstallmentId">Delete</a>
-            </td>
-        </tr>
+<div id="installmentGrid" class="ag-theme-alpine" style="height: 700px;"></div>
+
+@section Scripts {
+    <script>
+        // Definición de columnas (reutilizando el estilo de AuditLog)
+        const columnDefs = [
+            { 
+                headerName: "Préstamo", 
+                field: "loan.loanId",
+                valueGetter: params => params.data.loan?.loanId || '',
+                width: 120
+            },
+            { 
+                headerName: "Cuota N°", 
+                field: "installmentNumber",
+                width: 100
+            },
+            {
+                headerName: "Monto Total",
+                field: "installmentAmount",
+                valueFormatter: params => `$${params.value.toFixed(2)}`,
+                width: 120,
+                cellClass: 'text-end',
+                type: 'numericColumn'
+            },
+            {
+                headerName: "Pagado",
+                field: "paidAmount",
+                valueFormatter: params => `$${params.value.toFixed(2)}`,
+                width: 120,
+                cellClass: 'text-end',
+                type: 'numericColumn'
+            },
+            {
+                headerName: "Saldo Pendiente",
+                valueGetter: params => params.data.installmentAmount - params.data.paidAmount,
+                valueFormatter: params => {
+                    const balance = params.value;
+                    return `<span style="color: ${balance > 0 ? '#d32f2f' : '#388e3c'}">$${balance.toFixed(2)}</span>`;
+                },
+                width: 130,
+                cellClass: 'text-end',
+                type: 'numericColumn',
+                filter: 'agNumberColumnFilter',
+                comparator: (valueA, valueB) => valueA - valueB
+            },
+            { 
+                headerName: "Vencimiento", 
+                field: "dueDate",
+                valueFormatter: params => new Date(params.value).toLocaleDateString('es-ES'),
+                filter: 'agDateColumnFilter',
+                width: 150
+            },
+            { 
+                headerName: "Estado", 
+                field: "installmentStatus",
+                cellRenderer: params => {
+                    const status = params.value;
+                    let badgeClass = 'bg-secondary';
+                    if (status === 'Pendiente') badgeClass = 'bg-warning';
+                    if (status === 'Pagada') badgeClass = 'bg-success';
+                    if (status === 'Vencida') badgeClass = 'bg-danger';
+                    return `<span class="badge ${badgeClass}">${status}</span>`;
+                },
+                width: 130
+            },
+            {
+                headerName: "Detalle",
+                cellRenderer: params => `
+                    <button onclick="viewDetails(${params.data.installmentId})" 
+                            class="btn btn-sm btn-outline-primary">
+                    </button>`,
+                width: 100,
+                sortable: false,
+                filter: false
+            }
+        ];
+
+        // Reutilizamos la misma función getGridOptions (debe estar definida globalmente)
+        const gridOptions = getGridOptions(columnDefs, @Html.Raw(Json.Serialize(Model)));
+        
+
+        const gridDiv = document.querySelector('#installmentGrid');
+
+        if (gridDiv) {
+            const api = agGrid.createGrid(gridDiv, gridOptions);
+
+
+        } else {
+            console.error('El elemento #auditGrid no fue encontrado en el DOM.');
+        }
+    </script>
 }
-    </tbody>
-</table>
