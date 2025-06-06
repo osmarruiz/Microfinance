@@ -1,65 +1,113 @@
 @model IEnumerable<Microfinance.Models.Business.CollectionManagement>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Gestión de Cobranza"; // Título más descriptivo
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Listado de Gestiones de Cobranza</h1>
+        <a asp-action="Create" class="mb-0 btn btn-primary">Registrar Nueva Gestión</a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ManagementDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ManagementResult)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Notes)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDeleted)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Loan)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Collector)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.ManagementDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ManagementResult)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Notes)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsDeleted)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Loan.LoanId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Collector.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CollectionId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CollectionId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CollectionId">Delete</a>
-            </td>
-        </tr>
+<div id="collectionManagementGrid" class="ag-theme-alpine" style="height: 700px; width: 100%;"></div>
+
+@section Scripts {
+    <script>
+        function utcToLocalDateString(utcDateString) {
+            if (!utcDateString) return '';
+            try {
+                const date = new Date(utcDateString);
+                if (isNaN(date.getTime())) {
+                    return '';
+                }
+                return date.toLocaleDateString('es-ES'); 
+            } catch (e) {
+                console.error("Error al parsear fecha UTC:", utcDateString, e);
+                return '';
+            }
+        }
+
+        // Definición de columnas para la tabla de Gestión de Cobranza
+        const collectionManagementColumnDefs = [
+            { 
+                headerName: "Fecha de Gestión", 
+                field: "managementDate",
+                valueFormatter: params => utcToLocalDateString(params.value),
+                filter: 'agDateColumnFilter',
+                width: 150
+            },
+            {
+                headerName: "Resultado",
+                field: "managementResult",
+                width: 200,
+                filter: true // Habilitar filtro de texto
+            },
+            { 
+                headerName: "Notas", 
+                field: "notes",
+                width: 300,
+                // Opcional: limitar el texto y mostrar tooltip
+                cellRenderer: params => {
+                    const notes = params.value || '';
+                    const maxLength = 50; // Limite de caracteres para mostrar directamente
+                    if (notes.length > maxLength) {
+                        return `<span title="${notes}">${notes.substring(0, maxLength)}...</span>`;
+                    }
+                    return notes;
+                },
+                filter: true 
+            },
+            { 
+                headerName: "Préstamo ID", 
+                field: "loan.loanId", // Asumiendo que CollectionManagement tiene una propiedad Loan
+                valueGetter: params => params.data.loan?.loanId || '',
+                width: 120,
+                type: 'numericColumn'
+            },
+            { 
+                headerName: "Cobrador (ID)", 
+                field: "collector.id", // Asumiendo que CollectionManagement tiene una propiedad Collector
+                valueGetter: params => params.data.collector?.fullName || params.data.collector?.id || '',
+                width: 150
+            },
+            { 
+                headerName: "¿Eliminado?", 
+                field: "isDeleted",
+                cellRenderer: params => params.value ? 'Sí' : 'No', // Convertir booleano a texto
+                width: 100,
+                filter: true 
+            },
+            {
+                headerName: "Acciones",
+                cellRenderer: params => `
+                    <div class="d-flex justify-content-center">
+                        <a href="/CollectionManagement/Edit/${params.data.collectionId}" class="btn btn-sm btn-outline-warning me-1" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="/CollectionManagement/Details/${params.data.collectionId}" class="btn btn-sm btn-outline-info me-1" title="Detalles">
+                            <i class="bi bi-info-circle"></i>
+                        </a>
+                        <a href="/CollectionManagement/Delete/${params.data.collectionId}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>`,
+                width: 180,
+                sortable: false,
+                filter: false
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const collectionManagementGridDiv = document.querySelector('#collectionManagementGrid');
+
+            if (collectionManagementGridDiv) {
+                const rowData = @Html.Raw(Json.Serialize(Model));
+                const collectionManagementGridOptions = getGridOptions(collectionManagementColumnDefs, rowData);
+                agGrid.createGrid(collectionManagementGridDiv, collectionManagementGridOptions);
+            } else {
+                console.error('El elemento #collectionManagementGrid no fue encontrado en el DOM.');
+            }
+        });
+    </script>
 }
-    </tbody>
-</table>

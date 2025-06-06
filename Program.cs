@@ -53,11 +53,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    await IdentitySeeder.CrearRoles(services);
-//}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     await IdentitySeeder.CrearRoles(services);
+// }
 
 app.UseRouting();
 
