@@ -61,6 +61,8 @@ namespace Microfinance.Areas.Identity.Pages.Account.Manage
             ///     Esta API puede cambiar o eliminarse en futuras versiones.
             /// </summary>
             [Phone(ErrorMessage = "El número de teléfono no es válido")]
+            [RegularExpression(@"^\+505[0-9]{8}$", ErrorMessage = "Formato inválido. Debe comenzar con +505 seguido de 8 dígitos")]
+            [StringLength(12, ErrorMessage = "El teléfono no puede exceder 12 caracteres")]
             [Display(Name = "Número de teléfono")]
             public string PhoneNumber { get; set; }
         }

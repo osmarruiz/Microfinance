@@ -7,7 +7,7 @@ public static class IdentitySeeder
     public static async Task CrearRoles(IServiceProvider serviceProvider)
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        string[] roles = { "Administrador", "Vendedor", "Cobrador" };
+        string[] roles = { "Admin", "Salesperson", "Consultant" };
 
         foreach (var role in roles)
         {

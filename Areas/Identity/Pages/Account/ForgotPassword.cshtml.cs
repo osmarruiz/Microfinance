@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
 #nullable disable
 
 using System;
@@ -70,45 +71,103 @@ namespace Microfinance.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
-                await _emailSender.SendEmailAsync(
-                    Input.Email,
-                    "Restablecer su contraseña - Microfinance",
-                    $@"
-    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
-        <h2 style='color: #2c3e50;'>Restablecimiento de contraseña</h2>
-        
-        <p style='font-size: 16px;'>Hemos recibido una solicitud para restablecer la contraseña de su cuenta.</p>
-        
-        <p style='font-size: 16px;'>Por favor, haga clic en el siguiente enlace para crear una nueva contraseña:</p>
-        
-        <div style='text-align: center; margin: 25px 0;'>
-            <a href='{HtmlEncoder.Default.Encode(callbackUrl)}' 
-               style='background-color: #3498db; 
-                      color: white; 
-                      padding: 12px 24px; 
-                      text-decoration: none; 
-                      border-radius: 4px;
-                      font-weight: bold;
-                      display: inline-block;'>
-               Restablecer contraseña
-            </a>
-        </div>
-        
-        <p style='font-size: 14px; color: #7f8c8d;'>
-            Si no solicitó este cambio, puede ignorar este mensaje. 
-            El enlace expirará en 24 horas por motivos de seguridad.
-        </p>
-        
-        <p style='font-size: 14px; color: #7f8c8d;'>
-            Atentamente,<br>
-            El equipo de Microfinance
-        </p>
-    </div>
-    ");
+                await SendPasswordResetEmail(Input.Email, callbackUrl);
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }
 
             return Page();
         }
+        
+        private async Task SendPasswordResetEmail(string email, string callbackUrl)
+{
+    var emailBody = $@"
+    <!DOCTYPE html>
+    <html lang='es'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <title>Restablecer contraseña - Microfinance</title>
+        <style>
+            /* Mismos estilos que en el correo de bienvenida */
+            body {{
+                font-family: 'Arial', sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+            }}
+            .header {{
+                background-color: #4CAF50;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                border-radius: 5px 5px 0 0;
+                margin-bottom: 0;
+            }}
+            .content {{
+                padding: 25px;
+                background-color: #f9f9f9;
+                border-radius: 0 0 5px 5px;
+                border: 1px solid #ddd;
+                border-top: none;
+            }}
+            .action-button {{
+                display: inline-block;
+                padding: 12px 24px;
+                background-color: #4CAF50;
+                color: white !important;
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: bold;
+                margin: 15px 0;
+            }}
+            .footer {{
+                margin-top: 25px;
+                font-size: 12px;
+                color: #777;
+                text-align: center;
+                border-top: 1px solid #eee;
+                padding-top: 15px;
+            }}
+            .callout {{
+                background-color: #f0f8ff;
+                border-left: 4px solid #3498db;
+                padding: 12px;
+                margin: 15px 0;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h2 style='margin:0;'>Restablecer contraseña</h2>
+        </div>
+        <div class='content'>
+            <p>Hola,</p>
+            <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.</p>
+            
+            <div style='text-align: center; margin: 25px 0;'>
+                <a href='{HtmlEncoder.Default.Encode(callbackUrl)}' 
+                   class='action-button'>
+                   Restablecer contraseña
+                </a>
+            </div>
+            
+            <div class='callout'>
+                <p>Si no solicitaste este cambio, puedes ignorar este mensaje. El enlace expirará en 24 horas por motivos de seguridad.</p>
+            </div>
+        </div>
+        <div class='footer'>
+            <p>© {DateTime.Now.Year} Microfinance. Todos los derechos reservados.</p>
+            <p>Este es un mensaje automático, por favor no respondas a este correo.</p>
+        </div>
+    </body>
+    </html>";
+
+    await _emailSender.SendEmailAsync(
+        email,
+        "Restablecer contraseña - Microfinance",
+        emailBody);
+}
     }
 }
