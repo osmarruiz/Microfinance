@@ -1,10 +1,46 @@
 ﻿@page
 @model AccessDeniedModel
 @{
-    ViewData["Title"] = "Access denied";
+    ViewData["Title"] = "Acceso Denegado";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-</header>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-warning text-dark text-center py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-ban fa-4x"></i>
+                    </div>
+                    <h2 class="mb-0">@ViewData["Title"]</h2>
+                </div>
+                
+                <div class="card-body text-center p-4 p-md-5">
+                    <div class="alert alert-warning d-flex align-items-center mb-4">
+                        <i class="fas fa-exclamation-circle fa-2x me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">¡Permisos insuficientes!</h5>
+                            <p class="mb-0">No tienes los privilegios necesarios para acceder a este recurso</p>
+                        </div>
+                    </div>
+                    
+                    <p class="lead mb-4">
+                        Parece que estás intentando acceder a una página o función restringida.
+                    </p>
+                    
+                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4">
+                        <a href="/" class="btn btn-primary px-4">
+                            <i class="fas fa-home me-2"></i> Volver al inicio
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">
+                        Si crees que esto es un error, contacta al administrador del sistema
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
