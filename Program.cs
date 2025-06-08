@@ -1,4 +1,7 @@
 using System.Text.Json.Serialization;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Services;
+using Google.Apis.SQLAdmin.v1beta4;
 using Microfinance.Data;
 using Microfinance.Helpers;
 using Microfinance.Services;
@@ -34,6 +37,27 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
 });
+
+var googleCloudConfig = builder.Configuration.GetSection("GoogleCloud");
+var projectId = googleCloudConfig["ProjectId"];
+var serviceAccountKeyFilePath = googleCloudConfig["ServiceAccountKeyFilePath"];
+
+GoogleCredential credential;
+using (var stream = new FileStream(serviceAccountKeyFilePath, FileMode.Open, FileAccess.Read))
+{
+    
+    credential = GoogleCredential.FromStream(stream)
+        .CreateScoped(SQLAdminService.Scope.CloudPlatform); 
+}
+
+
+builder.Services.AddSingleton(new SQLAdminService(new BaseClientService.Initializer()
+{
+    HttpClientInitializer = credential,
+    ApplicationName = "MyCloudSqlMvcApp"
+}));
+
+builder.Services.AddScoped<CloudSqlService>();
 
 var app = builder.Build();
 
