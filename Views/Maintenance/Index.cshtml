@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Mantenimiento";
+    Layout = null; /* No layout para esta página, debe ser autocontenida */
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mantenimiento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        h1 {
+            color: #d9534f;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #d9534f;
+            animation: spin 1s ease infinite;
+            margin: 20px auto;
+        }
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>¡Disculpe las molestias!</h1>
+        <div class="spinner"></div>
+        <p>@ViewBag.MaintenanceMessage</p>
+        <p>Estamos realizando una operación de mantenimiento importante en nuestros sistemas. Esto puede tomar unos minutos.</p>
+        <p>Agradecemos su paciencia.</p>
+        <p>Esta página se actualizará automáticamente una vez que el servicio esté disponible.</p>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            location.reload();
+        }, 15000); // Recargar cada 15 segundos
+    </script>
+</body>
+</html>

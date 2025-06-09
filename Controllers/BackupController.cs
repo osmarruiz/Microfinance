@@ -2,19 +2,23 @@
 using Microfinance.Models; // Asegúrate de que este namespace exista si usas ErrorViewModel
 using Microfinance.Services; // ¡Importante! Asegúrate de que el namespace coincida con el de tu CloudSqlService
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Microfinance.Controllers;
 
+[Authorize(Roles = "Admin,SuperAdmin")] // Asegúrate de que el usuario tenga los roles necesarios
 public class BackupController : Controller
 {
     private readonly ILogger<BackupController> _logger;
     private readonly CloudSqlService _cloudSqlService;
+    private readonly ApplicationStatusService _appStatusService;
     
-    public BackupController(ILogger<BackupController> logger, CloudSqlService cloudSqlService)
+    public BackupController(ILogger<BackupController> logger, CloudSqlService cloudSqlService, ApplicationStatusService appStatusService)
     {
         _logger = logger;
         _cloudSqlService = cloudSqlService;
+        _appStatusService = appStatusService;
     }
     
     public IActionResult Index()
@@ -49,7 +53,6 @@ public class BackupController : Controller
         return View("Index");
     }
 
-
     [HttpPost]
     public async Task<IActionResult> RestoreDatabase(long? backupRunId)
     {
@@ -62,9 +65,8 @@ public class BackupController : Controller
             }
             else
             {
-                // Si no se proporciona un ID, intenta restaurar la última copia de seguridad exitosa
                 _logger.LogInformation(
-                    "No Backup Run ID provided. Attempting to get the latest successful backup run...");
+                    "No se proporcionó ID de copia de seguridad. Intentando obtener la última copia de seguridad exitosa...");
                 var latestBackup = await _cloudSqlService.GetLatestBackupRun();
                 if (latestBackup == null)
                 {
@@ -74,29 +76,48 @@ public class BackupController : Controller
                 }
 
                 idToRestore = latestBackup.Id.Value;
-                _logger.LogInformation($"Restoring from latest successful backup with ID: {idToRestore}");
+                _logger.LogInformation($"Restaurando desde la última copia de seguridad exitosa con ID: {idToRestore}");
             }
 
-            _logger.LogInformation($"Attempting to restore Cloud SQL database from Backup Run ID: {idToRestore}...");
+            _logger.LogInformation($"Intentando restaurar la base de datos de Cloud SQL desde el ID de copia de seguridad: {idToRestore}...");
+
+            // !!! Establecer el modo mantenimiento ANTES de iniciar la operación de restauración !!!
+            // Proporciona un mensaje específico para la restauración
+            _appStatusService.SetMaintenanceMode(true, null, "Estamos restaurando la base de datos. Esto puede tomar unos minutos.");
+
+
+            // La operación de RestoreBackup de Cloud SQL en sí es asíncrona.
+            // Devuelve un objeto Operation que necesitas sondear para conocer su estado.
             var operation = await _cloudSqlService.RestoreDatabase(idToRestore);
-            _logger.LogInformation($"Restore operation initiated: {operation.Name}. Status: {operation.Status}");
+            _logger.LogInformation($"Operación de restauración iniciada: {operation.Name}. Estado: {operation.Status}");
+
+            // Almacena el ID de la operación para que el servicio en segundo plano pueda monitorearlo
+            _appStatusService.SetMaintenanceMode(true, operation.Name, "Estamos restaurando la base de datos. Esto puede tomar unos minutos.");
+
 
             ViewBag.Message =
-                $"Operación de restauración de base de datos iniciada desde la copia de seguridad '{idToRestore}'. ID de Operación: {operation.Name}";
+                $"Operación de restauración de base de datos iniciada desde la copia de seguridad '{idToRestore}'. ID de Operación: {operation.Name}. La aplicación está ahora en modo de mantenimiento.";
+
+            // En lugar de regresar a Index inmediatamente, podrías querer redirigir
+            // a una página que confirme el inicio de la operación y explique el mantenimiento.
+            // O bien, el middleware interceptará futuras solicitudes.
+            return RedirectToAction("Index", "Maintenance"); // O una página de confirmación
         }
         catch (Google.GoogleApiException gex)
         {
             _logger.LogError(gex, "Error al restaurar la base de datos de Cloud SQL: {Message}", gex.Message);
             ViewBag.ErrorMessage =
                 $"Error de Google Cloud: {gex.Message}. Asegúrate de que la instancia exista y el ID de la copia de seguridad sea válido.";
+            _appStatusService.SetMaintenanceMode(false); // Deshabilitar mantenimiento si la iniciación de la restauración falló
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error inesperado al restaurar la base de datos de Cloud SQL.");
             ViewBag.ErrorMessage = $"Error inesperado: {ex.Message}";
+            _appStatusService.SetMaintenanceMode(false); // Deshabilitar mantenimiento si la iniciación de la restauración falló
         }
 
-        return View("Index");
+        return View("Index"); // Si ocurrió un error, regresa a la página de copia de seguridad
     }
 
     

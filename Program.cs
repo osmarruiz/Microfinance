@@ -4,6 +4,7 @@ using Google.Apis.Services;
 using Google.Apis.SQLAdmin.v1beta4;
 using Microfinance.Data;
 using Microfinance.Helpers;
+using Microfinance.Middleware;
 using Microfinance.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -50,7 +51,7 @@ using (var stream = new FileStream(serviceAccountKeyFilePath, FileMode.Open, Fil
         .CreateScoped(SQLAdminService.Scope.CloudPlatform); 
 }
 
-
+builder.Services.AddSingleton<ApplicationStatusService>();
 builder.Services.AddSingleton(new SQLAdminService(new BaseClientService.Initializer()
 {
     HttpClientInitializer = credential,
@@ -58,6 +59,7 @@ builder.Services.AddSingleton(new SQLAdminService(new BaseClientService.Initiali
 }));
 
 builder.Services.AddScoped<CloudSqlService>();
+builder.Services.AddHostedService<CloudSqlOperationMonitor>();
 
 var app = builder.Build();
 
@@ -75,7 +77,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseMaintenanceMode();
 
 // using (var scope = app.Services.CreateScope())
 // {

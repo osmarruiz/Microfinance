@@ -59,4 +59,10 @@ namespace Microfinance.Services;
                 .OrderByDescending(b => b.EndTime)
                 .FirstOrDefault(); // Ordenar manualmente por fecha de finalización
         }
+        
+        public async Task<Operation> GetOperationStatus(string operationId)
+        {
+            var request = _sqlAdminService.Operations.Get(_projectId, operationId);
+            return await request.ExecuteAsync();
+        }
     }
