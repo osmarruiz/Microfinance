@@ -65,7 +65,7 @@
                         </div>
 
                         <!-- Plazo en Meses -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="form-floating mb-3">
                                 <input asp-for="TermMonths" class="form-control" placeholder=" " required value="1" max="3"
                                        type="number" min="1"/>
@@ -76,7 +76,7 @@
 
 
                         <!-- Frecuencia de Pago -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="form-floating mb-3">
                                 <select asp-for="PaymentFrequency" class="form-control" required>
                                     <option value="">Seleccione frecuencia</option>
@@ -90,16 +90,9 @@
                             </div>
                         </div>
 
-                        <!-- Fecha de Vencimiento -->
-                        <div class="col-md-4">
-                            <div class="form-floating mb-3">
-                                <input asp-for="DueDate" class="form-control" placeholder=" " required
-                                       type="date" readonly id="dueDateInput"/>
-                                <label>Fecha de vencimiento</label>
-                                <span asp-validation-for="DueDate" class="text-danger small"></span>
-                            </div>
-                        </div>
 
+                    <input asp-for="DueDate" class="form-control" placeholder=" " required
+                           type="hidden" readonly id="dueDateInput"/>
                         <!-- Estado del Préstamo (oculto, valor por defecto) -->
                         <input type="hidden" asp-for="LoanStatus" value="@Microfinance.Models.Business.LoanStatusEnum.Activo"/>
                         <input type="hidden" asp-for="IsDeleted" value="false"/>
