@@ -77,7 +77,6 @@ public static class LoanStatusEnum
 {
     public const string Activo = "Activo";
     public const string Vencido = "Vencido";
-    public const string Pagado = "Pagado";
     public const string Cancelado = "Cancelado";
 }
 

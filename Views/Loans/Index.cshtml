@@ -18,7 +18,6 @@
         function actionsCellRenderer(params) {
             const loanId = params.data.loanId;
             return `
-                <a class="link-primary" href="/Loans/Edit/${loanId}">Editar</a> |
                 <a class="link-secondary" href="/Loans/Details/${loanId}">Detalles</a> |
                 <a class="link-danger" href="/Loans/Delete/${loanId}">Borrar</a>
             `;
@@ -41,7 +40,7 @@
                 headerName: "Vencimiento",
                 field: "dueDate",
                 filter: 'agDateColumnFilter',
-                valueFormatter: params => new Date(params.value).toLocaleDateString()
+                valueFormatter: params => new Date(params.value).toLocaleDateString('es-ES')
             },
             {
                 headerName: "Frecuencia Pago",
@@ -53,15 +52,24 @@
                 cellRenderer: params => {
                     const status = params.value;
                     let badgeClass = 'bg-secondary';
-                    if (status === 'Active') badgeClass = 'bg-success';
-                    if (status === 'Late') badgeClass = 'bg-warning text-dark';
-                    if (status === 'Default') badgeClass = 'bg-danger';
+                    if (status === 'Activo') badgeClass = 'bg-success';
+                    if (status === 'Vencido') badgeClass = 'bg-warning text-dark';
+                    if (status === 'Cancelado') badgeClass = 'bg-primary';
                     return `<span class="badge ${badgeClass}">${status}</span>`;
                 }
             },
             {
                 headerName: "Cliente",
                 field: "customer.fullName",
+                cellRenderer: function(params) {
+                    const link = document.createElement('a');
+                    link.href = `/Customers/Details/${params.data.customer.customerId}`; 
+                    link.className = 'link-primary';
+                    link.textContent = params.value; 
+                    link.style.cursor = 'pointer'; 
+
+                    return link;
+                }
             },
             {
                 headerName: "Vendedor",

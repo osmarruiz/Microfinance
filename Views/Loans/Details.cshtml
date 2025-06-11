@@ -1,84 +1,209 @@
 @model Microfinance.Models.Business.Loan
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles del Préstamo";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="h4 mb-0"><i class="fas fa-hand-holding-usd me-2"></i>Detalles del Préstamo</h2>
+                <div>
+                    <span class="badge @(Model.LoanStatus == "Activo" ? "bg-success" : "bg-warning") me-2">
+                        @Model.LoanStatus
+                    </span>
+                    @if(Model.IsDeleted) {
+                        <span class="badge bg-danger">Eliminado</span>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <!-- Columna Izquierda - Información Básica -->
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2"><i class="fas fa-info-circle me-2"></i>Información del Préstamo</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4 text-muted">Monto:</dt>
+                            <dd class="col-sm-8">@Model.Amount.ToString("C")</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Saldo Actual:</dt>
+                            <dd class="col-sm-8">@Model.CurrentBalance.ToString("C")</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Tasa de Interés:</dt>
+                            <dd class="col-sm-8">@Model.InterestRate.ToString("0.00")%</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Plazo:</dt>
+                            <dd class="col-sm-8">@Model.TermMonths meses</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                <!-- Columna Derecha - Información Adicional -->
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2"><i class="fas fa-calendar-alt me-2"></i>Fechas y Frecuencia</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4 text-muted">Fecha de Inicio:</dt>
+                            <dd class="col-sm-8">@Model.StartDate.ToString("dd/MM/yyyy")</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Fecha de Vencimiento:</dt>
+                            <dd class="col-sm-8">@Model.DueDate.ToString("dd/MM/yyyy")</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Frecuencia de Pago:</dt>
+                            <dd class="col-sm-8">@Model.PaymentFrequency</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Días Restantes:</dt>
+                            <dd class="col-sm-8">@((Model.DueDate - DateTime.Now).Days) días</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Relaciones -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2"><i class="fas fa-user-tie me-2"></i>Cliente</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4 text-muted">Nombre:</dt>
+                            <dd class="col-sm-8">
+                                <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Customer.CustomerId">
+                                    @Model.Customer.FullName
+                                </a>
+                            </dd>
+                            <dt class="col-sm-4 text-muted">Cédula/RUC:</dt>
+                            <dd class="col-sm-8">@Model.Customer.IdCard</dd>
+                        </dl>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2"><i class="fas fa-user-shield me-2"></i>Vendedor</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4 text-muted">Nombre:</dt>
+                            <dd class="col-sm-8">
+                                <a asp-controller="Sellers" asp-action="Details" asp-route-id="@Model.Seller.Id">
+                                    @Model.Seller.UserName
+                                </a>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección del DataGrid de Cuotas -->
+            <div class="mt-4 pt-3">
+                <h5 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Cuotas del Préstamo
+                </h5>
+                
+                <div id="installmentGrid" class="ag-theme-alpine" style="height: 400px;"></div>
+            </div>
+            
+            <!-- Sección de Acciones -->
+            <div class="d-flex flex-column flex-md-row justify-content-between mt-4 pt-3 border-top">
+                <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div>
-    <h4>Loan</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Amount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Amount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CurrentBalance)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CurrentBalance)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InterestRate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InterestRate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TermMonths)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TermMonths)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DueDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DueDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PaymentFrequency)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PaymentFrequency)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LoanStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LoanStatus)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDeleted)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDeleted)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Customer)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Customer.CustomerId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Seller)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Seller.Id)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.LoanId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            
+            const columnDefs = [
+                { 
+                    headerName: "Cuota N°", 
+                    field: "installmentNumber",
+                    width: 100,
+                    sortable: true,
+                    filter: true
+                },
+                {
+                    headerName: "Monto Total",
+                    field: "installmentAmount",
+                    valueFormatter: params => `C$${params.value.toFixed(2)}`,
+                    width: 120,
+                    cellClass: 'text-end',
+                    type: 'numericColumn'
+                },
+                {
+                    headerName: "Pagado",
+                    field: "paidAmount",
+                    valueFormatter: params => `C$${params.value.toFixed(2)}`,
+                    width: 120,
+                    cellClass: 'text-end',
+                    type: 'numericColumn'
+                },
+                {
+                    headerName: "Saldo Pendiente",
+                    valueGetter: params => (params.data.installmentAmount || 0) - (params.data.paidAmount || 0),
+                    cellRenderer: params => {
+                        const balance = Number(params.value) || 0;
+                        const span = document.createElement('span');
+                        span.style.color = balance > 0 ? '#d32f2f' : '#388e3c';
+                        span.style.fontWeight = 'bold';
+                        span.textContent = `C$${balance.toFixed(2)}`;
+                        return span;
+                    },
+                    comparator: (valueA, valueB) => Number(valueA) - Number(valueB),
+                    width: 150,
+                    cellClass: 'text-end'
+                },
+                { 
+                    headerName: "Vencimiento", 
+                    field: "dueDate",
+                    valueFormatter: params => new Date(params.value).toLocaleDateString('es-ES'),
+                    filter: 'agDateColumnFilter',
+                    width: 150
+                },
+                { 
+                    headerName: "Estado", 
+                    field: "installmentStatus",
+                    cellRenderer: params => {
+                        const status = params.value;
+                        let badgeClass = 'bg-secondary';
+                        if (status === 'Pendiente') badgeClass = 'bg-warning';
+                        if (status === 'Pagada') badgeClass = 'bg-success';
+                        if (status === 'Vencida') badgeClass = 'bg-danger';
+                        return `<span class="badge ${badgeClass}">${status}</span>`;
+                    },
+                    width: 130
+                },
+                {
+                    headerName: "Acciones",
+                    cellRenderer: params => {
+                        const installmentId = params.data.installmentId;
+                        return `
+                            <a href="/Installments/Details/${installmentId}" class="link-primary">
+                                Detalles
+                            </a>
+                        `;
+                    },
+                    width: 100,
+                    sortable: false,
+                    filter: false
+                }
+            ];
+
+            // Obtener solo las cuotas de este préstamo
+            const installmentsData = @Html.Raw(Json.Serialize(Model.Installments));
+
+            console.log(@Html.Raw(Json.Serialize(Model)));
+            const gridOptions = getGridOptions(columnDefs, installmentsData);
+
+            const gridDiv = document.querySelector('#installmentGrid');
+            if (gridDiv) {
+                new agGrid.createGrid(gridDiv, gridOptions);
+            }
+        });
+    </script>
+}

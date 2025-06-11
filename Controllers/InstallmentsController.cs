@@ -36,6 +36,7 @@ namespace Microfinance.Controllers
 
             var installment = await _context.Installments
                 .Include(i => i.Loan)
+                .Include(i => i.Payments)
                 .FirstOrDefaultAsync(m => m.InstallmentId == id);
             if (installment == null)
             {

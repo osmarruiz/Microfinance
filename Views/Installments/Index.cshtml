@@ -12,7 +12,13 @@
 
 @section Scripts {
     <script>
-        // Definición de columnas (reutilizando el estilo de AuditLog)
+        function actionsCellRenderer(params) {
+            const installmentId = params.data.installmentId;
+            return `
+                <a class="link-secondary" href="/Installments/Details/${installmentId}">Detalles</a> 
+            `;
+        }
+        
         const columnDefs = [
             { 
                 headerName: "Préstamo", 
@@ -28,7 +34,7 @@
             {
                 headerName: "Monto Total",
                 field: "installmentAmount",
-                valueFormatter: params => `$${params.value.toFixed(2)}`,
+                valueFormatter: params => `C$${params.value.toFixed(2)}`,
                 width: 120,
                 cellClass: 'text-end',
                 type: 'numericColumn'
@@ -36,23 +42,23 @@
             {
                 headerName: "Pagado",
                 field: "paidAmount",
-                valueFormatter: params => `$${params.value.toFixed(2)}`,
+                valueFormatter: params => `C$${params.value.toFixed(2)}`,
                 width: 120,
                 cellClass: 'text-end',
                 type: 'numericColumn'
             },
             {
                 headerName: "Saldo Pendiente",
-                valueGetter: params => params.data.installmentAmount - params.data.paidAmount,
-                valueFormatter: params => {
-                    const balance = params.value;
-                    return `<span style="color: ${balance > 0 ? '#d32f2f' : '#388e3c'}">$${balance.toFixed(2)}</span>`;
+                valueGetter: params => (params.data.installmentAmount || 0) - (params.data.paidAmount || 0),
+                cellRenderer: params => {
+                    const balance = Number(params.value) || 0;
+                    const span = document.createElement('span');
+                    span.style.color = balance > 0 ? '#d32f2f' : '#388e3c';
+                    span.style.fontWeight = 'bold';
+                    span.textContent = `C$${balance.toFixed(2)}`;
+                    return span;
                 },
-                width: 130,
-                cellClass: 'text-end',
-                type: 'numericColumn',
-                filter: 'agNumberColumnFilter',
-                comparator: (valueA, valueB) => valueA - valueB
+                comparator: (valueA, valueB) => Number(valueA) - Number(valueB) // Para ordenamiento correcto
             },
             { 
                 headerName: "Vencimiento", 
@@ -76,10 +82,7 @@
             },
             {
                 headerName: "Detalle",
-                cellRenderer: params => `
-                    <button onclick="viewDetails(${params.data.installmentId})" 
-                            class="btn btn-sm btn-outline-primary">
-                    </button>`,
+                cellRenderer: actionsCellRenderer,
                 width: 100,
                 sortable: false,
                 filter: false

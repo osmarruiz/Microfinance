@@ -1,72 +1,169 @@
 @model Microfinance.Models.Business.Installment
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles de Cuota";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Detalles de la Cuota
+                </h3>
+                <span class="badge @(Model.InstallmentStatus == "Paid" ? "bg-success" : Model.InstallmentStatus == "Pendiente" ? "bg-warning" : "bg-danger")">
+                    @Html.DisplayFor(model => model.InstallmentStatus)
+                </span>
+            </div>
+        </div>
 
-<div>
-    <h4>Installment</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InstallmentNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InstallmentNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InstallmentAmount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InstallmentAmount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PaidAmount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PaidAmount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LateFee)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LateFee)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DueDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DueDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PaymentDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PaymentDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InstallmentStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InstallmentStatus)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsDeleted)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsDeleted)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Loan)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Loan.LoanId)
-        </dd>
-    </dl>
+        <div class="card-body">
+            <div class="row">
+                <!-- Columna Izquierda - Información Básica -->
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">
+                            <i class="fas fa-info-circle me-2"></i>Información de la Cuota
+                        </h5>
+                        
+                        <dl class="row">
+                            <dt class="col-sm-5 text-muted">Número de Cuota:</dt>
+                            <dd class="col-sm-7">@Html.DisplayFor(model => model.InstallmentNumber)</dd>
+                            
+                            <dt class="col-sm-5 text-muted">Monto de Cuota:</dt>
+                            <dd class="col-sm-7">@Model.InstallmentAmount.ToString("C")</dd>
+                            
+                            <dt class="col-sm-5 text-muted">Monto Pagado:</dt>
+                            <dd class="col-sm-7">
+                                <span class="@(Model.PaidAmount >= Model.InstallmentAmount ? "text-success" : "text-danger")">
+                                    @Model.PaidAmount.ToString("C")
+                                </span>
+                            </dd>
+                            
+                            <dt class="col-sm-5 text-muted">Mora:</dt>
+                            <dd class="col-sm-7">@Model.LateFee.ToString("C")</dd>
+                        </dl>
+                    </div>
+                </div>
+                
+                <!-- Columna Derecha - Fechas y Relaciones -->
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">
+                            <i class="fas fa-calendar-alt me-2"></i>Fechas
+                        </h5>
+                        
+                        <dl class="row">
+                            <dt class="col-sm-5 text-muted">Fecha de Vencimiento:</dt>
+                            <dd class="col-sm-7">@Model.DueDate.ToLocalTime().ToString("dd/MM/yyyy")</dd>
+                            
+                            <dt class="col-sm-5 text-muted">Fecha de Pago:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.PaymentDate.HasValue)
+                                {
+                                    @Model.PaymentDate.Value.ToLocalTime().ToString("dd/MM/yyyy")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No pagado</span>
+                                }
+                            </dd>
+                            
+                            <dt class="col-sm-5 text-muted">Préstamo Asociado:</dt>
+                            <dd class="col-sm-7">
+                                <a asp-controller="Loans" asp-action="Details" asp-route-id="@Model.Loan.LoanId">
+                                    Préstamo #@Model.Loan.LoanId
+                                </a>
+                            </dd>
+                            
+                            <dt class="col-sm-5 text-muted">Estado:</dt>
+                            <dd class="col-sm-7">
+                                @if (Model.IsDeleted)
+                                {
+                                    <span class="badge bg-secondary">Eliminada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge @(Model.InstallmentStatus == "Paid" ? "bg-success" : "bg-warning")">
+                                        @Html.DisplayFor(model => model.InstallmentStatus)
+                                    </span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resumen de Saldo -->
+            <div class="alert @(Model.PaidAmount >= Model.InstallmentAmount ? "alert-success" : "alert-warning") mt-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas @(Model.PaidAmount >= Model.InstallmentAmount ? "fa-check-circle" : "fa-exclamation-triangle") me-3 fs-4"></i>
+                    <div>
+                        <h5 class="alert-heading">
+                            @if (Model.PaidAmount >= Model.InstallmentAmount)
+                            {
+                                <text>Cuota Completamente Pagada</text>
+                            }
+                            else
+                            {
+                                <text>Saldo Pendiente</text>
+                            }
+                        </h5>
+                        <p class="mb-0">
+                            @if (Model.PaidAmount >= Model.InstallmentAmount)
+                            {
+                                <text>Se ha completado el pago de esta cuota.</text>
+                            }
+                            else
+                            {
+                                <text>Falta por pagar: @((Model.InstallmentAmount - Model.PaidAmount).ToString("C"))</text>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div class="mt-4">
+                <h5 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="fas fa-receipt me-2"></i>Historial de Pagos
+                </h5>
+        
+                <div id="paymentsGrid" style="height: 300px; width:100%;" class="ag-theme-alpine"></div>
+            </div>
+            
+            <!-- Sección de Acciones -->
+            <div class="d-flex flex-column flex-md-row justify-content-between mt-4 pt-3 border-top">
+                <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </button>
+                <a asp-action="Index" class="btn btn-success">
+                    Agregar gestión de cobro
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.InstallmentId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+           
+            
+            const columnDefs = [
+                { headerName: "ID", field: "id", width: 80 },
+                { headerName: "Fecha", field: "date", width: 150 },
+                { headerName: "Monto", field: "amount", width: 120, cellClass: 'text-end' },
+                { headerName: "Cobrador", field: "collector", width: 150 },
+                { headerName: "Notas", field: "notes", flex: 1 }
+            ];
+
+            const paymentsData = @Html.Raw(Json.Serialize(Model.Payments));
+
+            const gridOptions = getGridOptions(columnDefs, paymentsData);
+
+            const gridDiv = document.querySelector('#paymentsGrid');
+            new agGrid.createGrid(gridDiv, gridOptions);
+        });
+    </script>
+}

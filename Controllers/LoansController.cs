@@ -40,6 +40,7 @@ namespace Microfinance.Controllers
             var loan = await _context.Loans
                 .Include(l => l.Customer)
                 .Include(l => l.Seller)
+                .Include(l => l.Installments)
                 .FirstOrDefaultAsync(m => m.LoanId == id);
             if (loan == null)
             {
