@@ -27,14 +27,16 @@
             {
                 headerName: "Monto",
                 field: "amount",
-                filter: 'agNumberColumnFilter',
-                valueFormatter: params => `C$${params.value.toLocaleString('es-NI')}`
+                valueFormatter: params => `C$${params.value.toLocaleString('es-NI')}`,
+                type: 'numericColumn',
+                cellClass: 'text-end'
             },
             {
                 headerName: "Saldo Actual",
                 field: "currentBalance",
-                filter: 'agNumberColumnFilter',
-                valueFormatter: params => `C$${params.value.toLocaleString('es-NI')}`
+                valueFormatter: params => `C$${params.value.toLocaleString('es-NI')}`,
+                type: 'numericColumn',
+                cellClass: 'text-end'
             },
             {
                 headerName: "Vencimiento",

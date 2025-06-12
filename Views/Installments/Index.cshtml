@@ -24,12 +24,14 @@
                 headerName: "Préstamo", 
                 field: "loan.loanId",
                 valueGetter: params => params.data.loan?.loanId || '',
-                width: 120
+                width: 120,
+                type: 'numericColumn'
             },
             { 
                 headerName: "Cuota N°", 
                 field: "installmentNumber",
-                width: 100
+                width: 100,
+                type: 'numericColumn'
             },
             {
                 headerName: "Monto Total",
@@ -58,6 +60,8 @@
                     span.textContent = `C$${balance.toFixed(2)}`;
                     return span;
                 },
+                cellClass: 'text-end',
+                type: 'numericColumn',
                 comparator: (valueA, valueB) => Number(valueA) - Number(valueB) // Para ordenamiento correcto
             },
             { 

@@ -54,52 +54,38 @@
                 type: 'numericColumn'
             },
             {
-                headerName: "Referencia",
-                field: "reference",
-                width: 180
-            },
-            {
                 headerName: "Cuota N°",
                 field: "installment.installmentId", // Asumiendo que Payment tiene una propiedad Installment
                 valueGetter: params => params.data.installment?.installmentNumber || '', // Mostrar el número de cuota
-                width: 100
+                cellRenderer: function(params) {
+                    const link = document.createElement('a');
+                    link.href = `/Installments/Details/${params.data.installment?.installmentId}`;
+                    link.className = 'link-primary';
+                    link.textContent = params.value;
+                    link.style.cursor = 'pointer';
+
+                    return link;
+                },
+                type: 'numericColumn'
             },
             {
-                headerName: "Cobrador (ID)",
+                headerName: "Cobrador",
                 field: "collector.id", // Asumiendo que Payment tiene una propiedad Collector
-                valueGetter: params => params.data.collector?.fullName || params.data.collector?.id || '', // Mostrar el nombre o ID del cobrador
+                valueGetter: params => params.data.collector?.userName || params.data.collector?.id || '', // Mostrar el nombre o ID del cobrador
                 width: 150
             },
             {
-                headerName: "¿Eliminado?",
-                field: "isDeleted",
-                cellRenderer: params => params.value ? 'Sí' : 'No', // Convertir booleano a texto
-                width: 100,
-                filter: true // Habilitar filtro para booleanos (se mostrará como checkbox o lista)
-            },
-            {
-                headerName: "Acciones",
-                cellRenderer: params => `
-                    <div class="d-flex justify-content-center">
-                        <a href="/Payment/Edit/${params.data.paymentId}" class="btn btn-sm btn-outline-warning me-1" title="Editar">
-                            <i class="bi bi-pencil"></i> {{-- Icono de lápiz --}}
-                        </a>
-                        <a href="/Payment/Details/${params.data.paymentId}" class="btn btn-sm btn-outline-info me-1" title="Detalles">
-                            <i class="bi bi-info-circle"></i> {{-- Icono de información --}}
-                        </a>
-                        <a href="/Payment/Delete/${params.data.paymentId}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                            <i class="bi bi-trash"></i> {{-- Icono de bote de basura --}}
-                        </a>
-                    </div>`,
-                width: 180,
-                sortable: false,
-                filter: false
+                headerName: "Referencia",
+                field: "reference",
+                width: 180
             }
         ];
 
         document.addEventListener('DOMContentLoaded', function () {
 
             const paymentGridDiv = document.querySelector('#paymentGrid');
+            
+            console.log(@Html.Raw(Json.Serialize(Model)));
 
             if (paymentGridDiv) {
                 // Pasa los datos del modelo C# al JavaScript

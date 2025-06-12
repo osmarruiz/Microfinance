@@ -7,15 +7,18 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Identity;
 
 namespace Microfinance.Controllers
 {
     public class CollectionManagementsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public CollectionManagementsController(ApplicationDbContext context)
+        public CollectionManagementsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
+            _userManager = userManager;
             _context = context;
         }
 
@@ -47,46 +50,55 @@ namespace Microfinance.Controllers
         }
 
         // GET: CollectionManagements/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create(int loanId, int installmentId)
         {
-            ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["LoanId"] = new SelectList(_context.Loans, "LoanId", "LoanId");
+
+            
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            ViewData["CollectorId"] = currentUser?.Id ?? "No identificado";
+            ViewData["LoanId"] = loanId;
+            ViewData["InstallmentId"] = installmentId; 
+
             return View();
         }
 
-        // POST: CollectionManagements/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+// POST: CollectionManagements/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CollectionId,LoanId,CollectorId,ManagementDate,ManagementResult,Notes,IsDeleted")] CollectionManagement collectionManagement)
+        public async Task<IActionResult> Create(
+            [Bind("CollectionId,LoanId,CollectorId,ManagementResult,Notes,IsDeleted")]
+            CollectionManagement collectionManagement,
+            int? installmentId) // Recibimos el installmentId del formulario
         {
             if (ModelState.IsValid)
             {
+                // Establecer fecha actual si no viene definida
+                collectionManagement.ManagementDate = DateTime.UtcNow;
+
                 _context.Add(collectionManagement);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id", collectionManagement.CollectorId);
-            ViewData["LoanId"] = new SelectList(_context.Loans, "LoanId", "LoanId", collectionManagement.LoanId);
-            return View(collectionManagement);
-        }
 
-        // GET: CollectionManagements/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
+                // Redirigir a registro de pago si corresponde
+                if (collectionManagement.ManagementResult == "Pago parcial" ||
+                    collectionManagement.ManagementResult == "Pago completo")
+                {
+                    if (installmentId != null)
+                    {
+                        return RedirectToAction("Create", "Payments", new
+                        {
+                            installmentId = installmentId.Value
+                        });
+                    }
+                }
+                
+                return RedirectToAction("Details", "Installments", new { id = installmentId });
             }
 
-            var collectionManagement = await _context.CollectionManagements.FindAsync(id);
-            if (collectionManagement == null)
-            {
-                return NotFound();
-            }
-            ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id", collectionManagement.CollectorId);
-            ViewData["LoanId"] = new SelectList(_context.Loans, "LoanId", "LoanId", collectionManagement.LoanId);
+            // Si hay errores, recargar la vista con los datos necesarios
+            ViewData["CollectorId"] = collectionManagement.CollectorId;
+            ViewData["LoanId"] = collectionManagement.LoanId;
+            ViewData["InstallmentId"] = installmentId;
             return View(collectionManagement);
         }
 
@@ -95,7 +107,9 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CollectionId,LoanId,CollectorId,ManagementDate,ManagementResult,Notes,IsDeleted")] CollectionManagement collectionManagement)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("CollectionId,LoanId,CollectorId,ManagementDate,ManagementResult,Notes,IsDeleted")]
+            CollectionManagement collectionManagement)
         {
             if (id != collectionManagement.CollectionId)
             {
@@ -120,8 +134,10 @@ namespace Microfinance.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id", collectionManagement.CollectorId);
             ViewData["LoanId"] = new SelectList(_context.Loans, "LoanId", "LoanId", collectionManagement.LoanId);
             return View(collectionManagement);
