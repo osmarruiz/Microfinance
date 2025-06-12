@@ -7,15 +7,18 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Identity;
 
 namespace Microfinance.Controllers
 {
     public class PaymentsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public PaymentsController(ApplicationDbContext context)
+        public PaymentsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
+            _userManager = userManager;
             _context = context;
         }
 
@@ -47,10 +50,21 @@ namespace Microfinance.Controllers
         }
 
         // GET: Payments/Create
-        public IActionResult Create()
+        public IActionResult Create(int installmentId)
         {
-            ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["InstallmentId"] = new SelectList(_context.Installments, "InstallmentId", "InstallmentId");
+            var installment = _context.Installments
+                .FirstOrDefault(i => i.InstallmentId == installmentId);
+
+            if (installment == null)
+            {
+                return NotFound();
+            }
+
+            var collectorId = _userManager.GetUserId(User);
+    
+            ViewData["CollectorId"] = collectorId;
+            ViewBag.Installment = installment; 
+    
             return View();
         }
 
@@ -59,16 +73,25 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PaymentId,InstallmentId,PaymentDate,PaidAmount,Reference,CollectorId,IsDeleted")] Payment payment)
+        public async Task<IActionResult> Create(
+            [Bind("PaymentId,InstallmentId,PaidAmount,Reference,CollectorId,IsDeleted")] Payment payment,
+            int installmentId)
         {
+            payment.PaymentDate = DateTime.UtcNow;
             if (ModelState.IsValid)
             {
                 _context.Add(payment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Details", "Installments", new { id = payment.InstallmentId });
             }
-            ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id", payment.CollectorId);
-            ViewData["InstallmentId"] = new SelectList(_context.Installments, "InstallmentId", "InstallmentId", payment.InstallmentId);
+
+            var installment = _context.Installments
+                .FirstOrDefault(i => i.InstallmentId == installmentId);
+            
+            var collectorId = _userManager.GetUserId(User);
+    
+            ViewData["CollectorId"] = collectorId;
+            ViewBag.Installment = installment; 
             return View(payment);
         }
 
@@ -85,8 +108,10 @@ namespace Microfinance.Controllers
             {
                 return NotFound();
             }
+
             ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id", payment.CollectorId);
-            ViewData["InstallmentId"] = new SelectList(_context.Installments, "InstallmentId", "InstallmentId", payment.InstallmentId);
+            ViewData["InstallmentId"] = new SelectList(_context.Installments, "InstallmentId", "InstallmentId",
+                payment.InstallmentId);
             return View(payment);
         }
 
@@ -95,7 +120,8 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PaymentId,InstallmentId,PaymentDate,PaidAmount,Reference,CollectorId,IsDeleted")] Payment payment)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("PaymentId,InstallmentId,PaymentDate,PaidAmount,Reference,CollectorId,IsDeleted")] Payment payment)
         {
             if (id != payment.PaymentId)
             {
@@ -120,10 +146,13 @@ namespace Microfinance.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CollectorId"] = new SelectList(_context.Users, "Id", "Id", payment.CollectorId);
-            ViewData["InstallmentId"] = new SelectList(_context.Installments, "InstallmentId", "InstallmentId", payment.InstallmentId);
+            ViewData["InstallmentId"] = new SelectList(_context.Installments, "InstallmentId", "InstallmentId",
+                payment.InstallmentId);
             return View(payment);
         }
 

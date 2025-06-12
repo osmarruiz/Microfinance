@@ -30,7 +30,8 @@
         // Definición de las columnas de la grilla AG-Grid
         const columnDefs = [
 
-            { headerName: "ID Cliente", field: "customerId", sortable: true, filter: true }, 
+            { headerName: "ID Cliente", field: "customerId", sortable: true,
+                type: 'numericColumn' }, 
             { headerName: "Nombre Completo", field: "fullName", sortable: true, filter: true },
             { headerName: "Cédula", field: "idCard", sortable: true, filter: true },
             { headerName: "Teléfono", field: "phoneNumber", sortable: true, filter: true }, 

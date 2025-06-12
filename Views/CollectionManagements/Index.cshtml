@@ -60,39 +60,22 @@
                 headerName: "Préstamo ID", 
                 field: "loan.loanId", // Asumiendo que CollectionManagement tiene una propiedad Loan
                 valueGetter: params => params.data.loan?.loanId || '',
-                width: 120,
+                cellRenderer: function(params) {
+                    const link = document.createElement('a');
+                    link.href = `/Loans/Details/${params.data.loan?.loanId}`;
+                    link.className = 'link-primary';
+                    link.textContent = params.value;
+                    link.style.cursor = 'pointer';
+
+                    return link;
+                },
                 type: 'numericColumn'
             },
             { 
-                headerName: "Cobrador (ID)", 
+                headerName: "Cobrador ", 
                 field: "collector.id", // Asumiendo que CollectionManagement tiene una propiedad Collector
-                valueGetter: params => params.data.collector?.fullName || params.data.collector?.id || '',
+                valueGetter: params => params.data.collector?.userName || params.data.collector?.id || '',
                 width: 150
-            },
-            { 
-                headerName: "¿Eliminado?", 
-                field: "isDeleted",
-                cellRenderer: params => params.value ? 'Sí' : 'No', // Convertir booleano a texto
-                width: 100,
-                filter: true 
-            },
-            {
-                headerName: "Acciones",
-                cellRenderer: params => `
-                    <div class="d-flex justify-content-center">
-                        <a href="/CollectionManagement/Edit/${params.data.collectionId}" class="btn btn-sm btn-outline-warning me-1" title="Editar">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="/CollectionManagement/Details/${params.data.collectionId}" class="btn btn-sm btn-outline-info me-1" title="Detalles">
-                            <i class="bi bi-info-circle"></i>
-                        </a>
-                        <a href="/CollectionManagement/Delete/${params.data.collectionId}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-                            <i class="bi bi-trash"></i>
-                        </a>
-                    </div>`,
-                width: 180,
-                sortable: false,
-                filter: false
             }
         ];
 

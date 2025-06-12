@@ -137,7 +137,11 @@
                 <button class="btn btn-outline-secondary" onclick="window.history.back()">
                     <i class="fas fa-arrow-left me-2"></i>Volver
                 </button>
-                <a asp-action="Index" class="btn btn-success">
+                <a asp-action="Create"
+                   asp-controller="CollectionManagements"
+                   asp-route-loanId="@Model.LoanId" 
+                   asp-route-installmentId="@Model.InstallmentId" 
+                   class="btn btn-success">
                     Agregar gestión de cobro
                 </a>
             </div>

@@ -1,44 +1,55 @@
 @model Microfinance.Models.Business.Payment
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Registrar Pago";
+    
+    var installment = ViewBag.Installment as Microfinance.Models.Business.Installment;
+    Layout = "_Layout";
 }
 
-<h1>Create</h1>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-money-bill-wave me-2"></i>Registrar Nuevo Pago
+            </h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                
+                <!-- Hidden fields -->
+                <input type="hidden" asp-for="InstallmentId" value="@installment?.InstallmentId" />
+                <input type="hidden" asp-for="CollectorId" value="@ViewData["CollectorId"]" />
+                
+                <div class="row g-3">
+                    <!-- Amount -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="number" asp-for="PaidAmount" class="form-control" placeholder=" " min="1" max="@installment?.InstallmentAmount" value="@installment?.InstallmentAmount"/>
+                            <label asp-for="PaidAmount"></label>
+                            <span asp-validation-for="PaidAmount" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Reference -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Reference" class="form-control" placeholder=" " />
+                            <label asp-for="Reference"></label>
+                            <span asp-validation-for="Reference" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
 
-<h4>Payment</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="InstallmentId" class="control-label"></label>
-                <select asp-for="InstallmentId" class ="form-control" asp-items="ViewBag.InstallmentId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="PaidAmount" class="control-label"></label>
-                <input asp-for="PaidAmount" class="form-control" />
-                <span asp-validation-for="PaidAmount" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Reference" class="control-label"></label>
-                <input asp-for="Reference" class="form-control" />
-                <span asp-validation-for="Reference" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CollectorId" class="control-label"></label>
-                <select asp-for="CollectorId" class ="form-control" asp-items="ViewBag.CollectorId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i>Registrar Pago
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {

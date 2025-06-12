@@ -1,49 +1,61 @@
 @model Microfinance.Models.Business.CollectionManagement
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Gestión de Cobranza";
 }
 
-<h1>Create</h1>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fas fa-cash-register me-2"></i>Nueva Gestión de Cobranza
+            </h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                
+                <!-- Campos ocultos necesarios -->
+                <input type="hidden" asp-for="LoanId" value="@ViewData["LoanId"]" />
+                <input type="hidden" asp-for="CollectorId" value="@ViewData["CollectorId"]"/>
+                <input type="hidden" name="installmentId" value="@ViewData["InstallmentId"]" />
 
-<h4>CollectionManagement</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="LoanId" class="control-label"></label>
-                <select asp-for="LoanId" class ="form-control" asp-items="ViewBag.LoanId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="CollectorId" class="control-label"></label>
-                <select asp-for="CollectorId" class ="form-control" asp-items="ViewBag.CollectorId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="ManagementDate" class="control-label"></label>
-                <input asp-for="ManagementDate" class="form-control" />
-                <span asp-validation-for="ManagementDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ManagementResult" class="control-label"></label>
-                <input asp-for="ManagementResult" class="form-control" />
-                <span asp-validation-for="ManagementResult" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Notes" class="control-label"></label>
-                <input asp-for="Notes" class="form-control" />
-                <span asp-validation-for="Notes" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+                <div class="row g-3">
+                    <!-- Resultado de la Gestión -->
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <select asp-for="ManagementResult" class="form-control" required>
+                                <option value="">Seleccione un resultado</option>
+                                <option value="Pago parcial">Pago parcial</option>
+                                <option value="Pago completo">Pago completo</option>
+                                <option value="No contactado">No contactado</option>
+                            </select>
+                            <label>Resultado de la gestión</label>
+                            <span asp-validation-for="ManagementResult" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Notas -->
+                    <div class="col-12">
+                        <div class="form-floating mb-3">
+                            <textarea asp-for="Notes" class="form-control" placeholder=" " style="height: 100px;"></textarea>
+                            <label>Notas adicionales</label>
+                            <span asp-validation-for="Notes" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-2"></i>Continuar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
