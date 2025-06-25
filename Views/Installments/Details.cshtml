@@ -11,7 +11,7 @@
                 <h3 class="card-title mb-0">
                     <i class="fas fa-file-invoice-dollar me-2"></i>Detalles de la Cuota
                 </h3>
-                <span class="badge @(Model.InstallmentStatus == "Paid" ? "bg-success" : Model.InstallmentStatus == "Pendiente" ? "bg-warning" : "bg-danger")">
+                <span class="badge @(Model.InstallmentStatus == "Pagada" ? "bg-success" : Model.InstallmentStatus == "Pendiente" ? "bg-warning" : "bg-danger")">
                     @Html.DisplayFor(model => model.InstallmentStatus)
                 </span>
             </div>
@@ -31,17 +31,21 @@
                             <dd class="col-sm-7">@Html.DisplayFor(model => model.InstallmentNumber)</dd>
                             
                             <dt class="col-sm-5 text-muted">Monto de Cuota:</dt>
-                            <dd class="col-sm-7">@Model.InstallmentAmount.ToString("C")</dd>
+                            <dd class="col-sm-7">C$@Model.PrincipalAmount</dd>
+                            
+                            <dt class="col-sm-5 text-muted">Intereses:</dt>
+                            <dd class="col-sm-7">C$@Model.NormalInterestAmount</dd>
+                            
+                            <dt class="col-sm-5 text-muted">Intereses moratorios:</dt>
+                            <dd class="col-sm-7">C$@Model.LateInterestAmount</dd>
                             
                             <dt class="col-sm-5 text-muted">Monto Pagado:</dt>
                             <dd class="col-sm-7">
-                                <span class="@(Model.PaidAmount >= Model.InstallmentAmount ? "text-success" : "text-danger")">
-                                    @Model.PaidAmount.ToString("C")
+                                <span class="@(Model.PaidAmount >= Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount ? "text-success" : "text-danger")">
+                                    C$@Model.PaidAmount
                                 </span>
                             </dd>
                             
-                            <dt class="col-sm-5 text-muted">Mora:</dt>
-                            <dd class="col-sm-7">@Model.LateFee.ToString("C")</dd>
                         </dl>
                     </div>
                 </div>
@@ -71,36 +75,23 @@
                             
                             <dt class="col-sm-5 text-muted">Préstamo Asociado:</dt>
                             <dd class="col-sm-7">
-                                <a asp-controller="Loans" asp-action="Details" asp-route-id="@Model.Loan.LoanId">
+                                <a asp-controller="Loans" asp-action="Details" asp-route-id="@Model.Loan.LoanId" class="link-primary">
                                     Préstamo #@Model.Loan.LoanId
                                 </a>
                             </dd>
                             
-                            <dt class="col-sm-5 text-muted">Estado:</dt>
-                            <dd class="col-sm-7">
-                                @if (Model.IsDeleted)
-                                {
-                                    <span class="badge bg-secondary">Eliminada</span>
-                                }
-                                else
-                                {
-                                    <span class="badge @(Model.InstallmentStatus == "Paid" ? "bg-success" : "bg-warning")">
-                                        @Html.DisplayFor(model => model.InstallmentStatus)
-                                    </span>
-                                }
-                            </dd>
                         </dl>
                     </div>
                 </div>
             </div>
             
             <!-- Resumen de Saldo -->
-            <div class="alert @(Model.PaidAmount >= Model.InstallmentAmount ? "alert-success" : "alert-warning") mt-3">
+            <div class="alert @(Model.PaidAmount >= Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount ? "alert-success" : "alert-warning") mt-3">
                 <div class="d-flex align-items-center">
-                    <i class="fas @(Model.PaidAmount >= Model.InstallmentAmount ? "fa-check-circle" : "fa-exclamation-triangle") me-3 fs-4"></i>
+                    <i class="fas @(Model.PaidAmount >= Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount ? "fa-check-circle" : "fa-exclamation-triangle") me-3 fs-4"></i>
                     <div>
                         <h5 class="alert-heading">
-                            @if (Model.PaidAmount >= Model.InstallmentAmount)
+                            @if (Model.PaidAmount >= Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount)
                             {
                                 <text>Cuota Completamente Pagada</text>
                             }
@@ -110,13 +101,13 @@
                             }
                         </h5>
                         <p class="mb-0">
-                            @if (Model.PaidAmount >= Model.InstallmentAmount)
+                            @if (Model.PaidAmount >= Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount)
                             {
                                 <text>Se ha completado el pago de esta cuota.</text>
                             }
                             else
                             {
-                                <text>Falta por pagar: @((Model.InstallmentAmount - Model.PaidAmount).ToString("C"))</text>
+                                <text>Falta por pagar: @((Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount - Model.PaidAmount).ToString("C"))</text>
                             }
                         </p>
                     </div>
@@ -163,6 +154,8 @@
             ];
 
             const paymentsData = @Html.Raw(Json.Serialize(Model.Payments));
+            
+            console.log(paymentsData);
 
             const gridOptions = getGridOptions(columnDefs, paymentsData);
 

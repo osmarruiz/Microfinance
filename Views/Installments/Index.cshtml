@@ -19,24 +19,28 @@
             `;
         }
         
+        console.log(@Html.Raw(Json.Serialize(Model)));
+        
         const columnDefs = [
             { 
                 headerName: "Préstamo", 
                 field: "loan.loanId",
                 valueGetter: params => params.data.loan?.loanId || '',
                 width: 120,
+                sort: 'asc',
                 type: 'numericColumn'
             },
             { 
                 headerName: "Cuota N°", 
                 field: "installmentNumber",
                 width: 100,
+                sort: 'asc',
                 type: 'numericColumn'
             },
             {
                 headerName: "Monto Total",
-                field: "installmentAmount",
-                valueFormatter: params => `C$${params.value.toFixed(2)}`,
+                field: "principalAmount",
+                valueGetter: params => `C$${((params.data.principalAmount || 0) + (params.data.normalInterestAmount || 0) + (params.data.lateInterestAmount || 0)).toFixed(2)}`,
                 width: 120,
                 cellClass: 'text-end',
                 type: 'numericColumn'
@@ -51,7 +55,7 @@
             },
             {
                 headerName: "Saldo Pendiente",
-                valueGetter: params => (params.data.installmentAmount || 0) - (params.data.paidAmount || 0),
+                valueGetter: params => ((params.data.principalAmount || 0) + (params.data.normalInterestAmount || 0) + (params.data.lateInterestAmount || 0)) - (params.data.paidAmount || 0),
                 cellRenderer: params => {
                     const balance = Number(params.value) || 0;
                     const span = document.createElement('span');
@@ -85,7 +89,7 @@
                 width: 130
             },
             {
-                headerName: "Detalle",
+                headerName: "Acciones",
                 cellRenderer: actionsCellRenderer,
                 width: 100,
                 sortable: false,
@@ -101,7 +105,7 @@
 
         if (gridDiv) {
             const api = agGrid.createGrid(gridDiv, gridOptions);
-
+            
 
         } else {
             console.error('El elemento #auditGrid no fue encontrado en el DOM.');

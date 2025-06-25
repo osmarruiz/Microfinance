@@ -38,8 +38,7 @@
             {
                 headerName: "Resultado",
                 field: "managementResult",
-                width: 200,
-                filter: true // Habilitar filtro de texto
+                width: 200
             },
             { 
                 headerName: "Notas", 
@@ -54,7 +53,6 @@
                     }
                     return notes;
                 },
-                filter: true 
             },
             { 
                 headerName: "Préstamo ID", 
@@ -72,7 +70,8 @@
                 type: 'numericColumn'
             },
             { 
-                headerName: "Cobrador ", 
+                headerName: "Cobrador ",
+                filter: 'agTextColumnFilter',
                 field: "collector.id", // Asumiendo que CollectionManagement tiene una propiedad Collector
                 valueGetter: params => params.data.collector?.userName || params.data.collector?.id || '',
                 width: 150

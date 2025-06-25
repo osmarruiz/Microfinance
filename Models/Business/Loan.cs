@@ -15,7 +15,8 @@ public class Loan
     public int LoanId { get; set; }
 
     [Required(ErrorMessage = "El cliente es requerido")]
-    [Column("customer_id")] 
+    [Column("customer_id")]
+    [Display(Name = "Cliente")]
     public int CustomerId { get; set; }
 
     [Required(ErrorMessage = "El vendedor es requerido")]
@@ -25,25 +26,34 @@ public class Loan
 
     [Required(ErrorMessage = "El monto es requerido")]
     [Range(4000.00, 30000.00, ErrorMessage = "El monto debe estar entre {1} y {2}")]
-    [Column("amount")] 
+    [Column("principal_amount")] 
+    [Display(Name = "Monto del Préstamo")]
     [Precision(10, 2)] 
-    public decimal Amount { get; set; }
+    public decimal PrincipalAmount { get; set; }
 
-    [Required(ErrorMessage = "El balance actual es requerido")]
-    [Range(0, double.MaxValue, ErrorMessage = "El balance no puede ser negativo")]
-    [Column("current_balance")]
+    [Required(ErrorMessage = "El interes actual es requerido")]
+    [Range(0, double.MaxValue, ErrorMessage = "El interes no puede ser negativo")]
+    [Column("normal_interest_amount")]
     [Precision(10, 2)]
-    public decimal CurrentBalance { get; set; }
+    public decimal NormalInterestAmount { get; set; }
+    
+    [Required(ErrorMessage = "El interes moratirio actual es requerido")]
+    [Range(0, double.MaxValue, ErrorMessage = "El interes moratorio no puede ser negativo")]
+    [Column("late_interest_amount")]
+    [Precision(10, 2)]
+    public decimal LateInterestAmount { get; set; } = 0;
 
     [Required(ErrorMessage = "La tasa de interés es requerida")]
     [Range(0, 100, ErrorMessage = "La tasa de interés debe estar entre 0 y 100")]
-    [Column("interest_rate")]
+    [Column("monthly_interest_rate")]
+    [Display(Name = "Interés Moratorio")]
     [Precision(10, 2)]
-    public decimal InterestRate { get; set; }
+    public decimal MonthlyInterestRate { get; set; }
 
     [Required(ErrorMessage = "El plazo en meses es requerido")]
     [Range(1, int.MaxValue, ErrorMessage = "El plazo debe ser de al menos 1 mes")]
     [Column("term_months")] 
+    [Display(Name = "Plazo (Meses)")]
     public int TermMonths { get; set; }
 
     [Column("start_date")] 
@@ -56,6 +66,7 @@ public class Loan
     [Required(ErrorMessage = "La frecuencia de pago es requerida")]
     [MaxLength(20)]
     [Column("payment_frequency")]
+    [Display(Name = "Frecuencia de Pago")]
     public string PaymentFrequency { get; set; } = null!;
 
     [MaxLength(20)]

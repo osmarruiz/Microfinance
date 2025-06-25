@@ -25,10 +25,10 @@
                         
                         <dl class="row">
                             <dt class="col-sm-4 text-muted">Monto:</dt>
-                            <dd class="col-sm-8">@Html.DisplayFor(model => model.Amount)</dd>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.PrincipalAmount)</dd>
                             
                             <dt class="col-sm-4 text-muted">Tasa de interés:</dt>
-                            <dd class="col-sm-8">@Html.DisplayFor(model => model.InterestRate)%</dd>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.MonthlyInterestRate)%</dd>
                             
                             <dt class="col-sm-4 text-muted">Plazo:</dt>
                             <dd class="col-sm-8">@Html.DisplayFor(model => model.TermMonths) meses</dd>
@@ -52,7 +52,7 @@
                             <dd class="col-sm-8">@Model.DueDate.ToLocalTime().ToString("dd/MM/yyyy")</dd>
                             
                             <dt class="col-sm-4 text-muted">Saldo actual:</dt>
-                            <dd class="col-sm-8">@Html.DisplayFor(model => model.CurrentBalance)</dd>
+                            <dd class="col-sm-8">@Html.DisplayFor(model => model.NormalInterestAmount)</dd>
                             
                             <dt class="col-sm-4 text-muted">Estado:</dt>
                             <dd class="col-sm-8">

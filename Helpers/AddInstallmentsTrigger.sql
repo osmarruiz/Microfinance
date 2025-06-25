@@ -1,150 +1,168 @@
 ﻿CREATE OR REPLACE FUNCTION generate_installments()
     RETURNS TRIGGER AS $$
 DECLARE
-    i INTEGER := 0;
-    total_installments INTEGER;
-    installment_amount NUMERIC(10,2);
-    total_payment NUMERIC(10,2);
+    installment_count INTEGER;
+    installment_num INTEGER := 1;
     due_date TIMESTAMP WITH TIME ZONE;
-    payment_date_candidate TIMESTAMP WITH TIME ZONE;
-    max_daily_installments INTEGER := 20;
-    collector_installment_count INTEGER;
+    nicaragua_date DATE;
+    final_due_date TIMESTAMP WITH TIME ZONE;
+    monthly_interest NUMERIC(10,2);
+    principal_portion NUMERIC(10,2);
+    interest_portion NUMERIC(10,2);
+    total_interest NUMERIC(10,2);
+    remaining_principal NUMERIC(10,2) := NEW.principal_amount;
+    remaining_interest NUMERIC(10,2);
+    days_interval INTEGER;
     is_weekend BOOLEAN;
-    business_days_needed INTEGER;
-    calc_date TIMESTAMP WITH TIME ZONE;
-    remaining_amount NUMERIC(10,2);
-    first_payment_date TIMESTAMP WITH TIME ZONE;
-    monthly_interest_rate NUMERIC(10,2);
+    base_principal INTEGER;
+    principal_remainder NUMERIC(10,2);
+    base_interest INTEGER;
+    interest_remainder NUMERIC(10,2);
 BEGIN
-    -- Calcular tasa de interés mensual
-    monthly_interest_rate := NEW.interest_rate/100;
+    -- Validar parámetros del préstamo
+    IF NEW.principal_amount <= 0 THEN
+        RAISE EXCEPTION 'El monto principal debe ser positivo';
+    END IF;
 
-    -- Calcular el monto total a pagar con interés compuesto mensual
-    total_payment := NEW.amount * POWER(1 + monthly_interest_rate, NEW.term_months);
+    IF NEW.term_months <= 0 THEN
+        RAISE EXCEPTION 'El plazo debe ser positivo';
+    END IF;
 
-    -- Actualizar el saldo pendiente en el préstamo
-    UPDATE business.loans
-    SET current_balance = total_payment
-    WHERE loan_id = NEW.loan_id;
+    -- Usar la tasa de interés mensual directamente de la tabla
+    monthly_interest := NEW.monthly_interest_rate / 100;
 
-    -- Determinar fecha de primer pago (mañana si es hoy)
-    first_payment_date := NEW.start_date + INTERVAL '1 day';
+    -- Calcular interés total para el préstamo (interés simple)
+    total_interest := ROUND(NEW.principal_amount * monthly_interest * NEW.term_months, 2);
+    remaining_interest := total_interest;
 
-    -- Determinar el número total de cuotas según la frecuencia
+    -- Determinar número de cuotas e intervalo basado en la frecuencia
     CASE NEW.payment_frequency
         WHEN 'Diario' THEN
-            -- Calcular días laborales necesarios (30 días naturales ≈ 26 días laborales por mes)
-            business_days_needed := NEW.term_months * 26;
-            total_installments := business_days_needed;
-
+            installment_count := NEW.term_months * 30; -- Aproximado
+            days_interval := 1;
         WHEN 'Semanal' THEN
-            total_installments := NEW.term_months * 4; -- 4 semanas por mes
+            installment_count := NEW.term_months * 4;
+            days_interval := 7;
         WHEN 'Quincenal' THEN
-            total_installments := NEW.term_months * 2; -- 2 quincenas por mes
+            installment_count := NEW.term_months * 2;
+            days_interval := 15;
         WHEN 'Mensual' THEN
-            total_installments := NEW.term_months; -- 1 cuota por mes
-        ELSE
-            total_installments := NEW.term_months;
+            installment_count := NEW.term_months;
+            days_interval := 30;
         END CASE;
 
-    -- Calcular el monto de cada cuota (redondeado a 2 decimales)
-    installment_amount := ROUND(total_payment / total_installments, 2);
+    -- Calcular partes enteras del principal
+    base_principal := FLOOR(NEW.principal_amount / installment_count);
+    principal_remainder := NEW.principal_amount - (base_principal * installment_count);
 
-    -- Ajustar la última cuota para compensar redondeos
-    remaining_amount := total_payment - (installment_amount * (total_installments - 1));
+    -- Calcular partes enteras del interés
+    base_interest := FLOOR(total_interest / installment_count);
+    interest_remainder := total_interest - (base_interest * installment_count);
 
-    -- Generar las cuotas
-    calc_date := first_payment_date; -- Comenzar desde mañana
-    WHILE i < total_installments LOOP
-            -- Para frecuencia diaria, avanzar día por día excluyendo domingos
-            IF NEW.payment_frequency = 'Diario' THEN
-                -- Saltar domingos
-                WHILE EXTRACT(DOW FROM calc_date) = 0 LOOP
-                        calc_date := calc_date + INTERVAL '1 day';
-                    END LOOP;
+    -- Comenzar con la fecha de inicio en hora de Nicaragua
+    due_date := NEW.start_date;
+    nicaragua_date := (due_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Managua')::DATE;
 
-                due_date := calc_date;
-                calc_date := calc_date + INTERVAL '1 day';
-            ELSE
-                -- Para otras frecuencias
-                i := i + 1;
-                CASE NEW.payment_frequency
-                    WHEN 'Semanal' THEN
-                        due_date := first_payment_date + (i * INTERVAL '1 week');
-                    WHEN 'Quincenal' THEN
-                        due_date := first_payment_date + (i * INTERVAL '15 days');
-                    WHEN 'Mensual' THEN
-                        due_date := first_payment_date + (i * INTERVAL '1 month');
-                    ELSE
-                        due_date := first_payment_date + (i * INTERVAL '1 month');
-                    END CASE;
+    -- Para pagos diarios, encontrar el próximo día laboral si es domingo
+    IF NEW.payment_frequency = 'Diario' THEN
+        WHILE EXTRACT(DOW FROM nicaragua_date) = 0 LOOP -- Domingo
+        nicaragua_date := nicaragua_date + INTERVAL '1 day';
+            END LOOP;
+        due_date := (nicaragua_date::TEXT || ' 00:00:00 America/Managua')::TIMESTAMP WITH TIME ZONE;
+    END IF;
+
+    FOR i IN 1..installment_count LOOP
+            -- Para frecuencias no diarias, calcular la próxima fecha de pago
+            IF NEW.payment_frequency != 'Diario' THEN
+                due_date := due_date + (days_interval || ' days')::INTERVAL;
             END IF;
 
-            -- Ajustar fecha si es sábado (para frecuencias no diarias)
-            IF NEW.payment_frequency <> 'Diario' THEN
-                is_weekend := EXTRACT(DOW FROM due_date) IN (0, 6);
-                WHILE is_weekend LOOP
-                        due_date := due_date + INTERVAL '1 day';
-                        is_weekend := EXTRACT(DOW FROM due_date) IN (0, 6);
-                    END LOOP;
-            END IF;
+            -- Convertir a fecha de Nicaragua para verificar día laboral
+            nicaragua_date := (due_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Managua')::DATE;
 
-            -- Buscar fecha de pago adecuada
-            payment_date_candidate := due_date;
+            -- Verificar si la fecha cae en domingo (0) en Nicaragua
+            is_weekend := EXTRACT(DOW FROM nicaragua_date) = 0;
 
-            -- Verificar carga del cobrador
-            SELECT COUNT(*) INTO collector_installment_count
-            FROM business.installments
-            WHERE payment_date = payment_date_candidate::date
-              AND loan_id IN (
-                SELECT loan_id FROM business.loans WHERE seller_id = NEW.seller_id
-            );
-
-            -- Ajustar si hay sobrecarga
-            WHILE collector_installment_count >= max_daily_installments LOOP
-                    payment_date_candidate := payment_date_candidate + INTERVAL '1 day';
-                    WHILE EXTRACT(DOW FROM payment_date_candidate) IN (0, 6) LOOP
-                            payment_date_candidate := payment_date_candidate + INTERVAL '1 day';
-                        END LOOP;
-                    SELECT COUNT(*) INTO collector_installment_count
-                    FROM business.installments
-                    WHERE payment_date = payment_date_candidate::date
-                      AND loan_id IN (
-                        SELECT loan_id FROM business.loans WHERE seller_id = NEW.seller_id
-                    );
+            -- Ajustar fecha si cae en domingo (mover al próximo lunes)
+            WHILE is_weekend LOOP
+                    nicaragua_date := nicaragua_date + INTERVAL '1 day';
+                    is_weekend := EXTRACT(DOW FROM nicaragua_date) = 0;
                 END LOOP;
 
-            -- Insertar cuota
-            IF NEW.payment_frequency = 'Diario' OR i > 0 THEN
-                INSERT INTO business.installments (
-                    loan_id,
-                    installment_number,
-                    installment_amount,
-                    paid_amount,
-                    late_fee,
-                    due_date,
-                    payment_date,
-                    installment_status
-                ) VALUES (
-                             NEW.loan_id,
-                             CASE WHEN NEW.payment_frequency = 'Diario' THEN i + 1 ELSE i END,
-                             CASE WHEN (NEW.payment_frequency = 'Diario' AND i + 1 = total_installments)
-                                 OR i = total_installments
-                                      THEN remaining_amount
-                                  ELSE installment_amount END,
-                             0,
-                             0,
-                             due_date,
-                             payment_date_candidate,
-                             'Pendiente'
-                         );
-
-                IF NEW.payment_frequency = 'Diario' THEN
-                    i := i + 1;
+            -- Para pagos diarios, avanzar al siguiente día (ya se saltaron domingos)
+            IF NEW.payment_frequency = 'Diario' AND i > 1 THEN
+                nicaragua_date := nicaragua_date + INTERVAL '1 day';
+                -- Saltar domingo si caemos en él
+                IF EXTRACT(DOW FROM nicaragua_date) = 0 THEN
+                    nicaragua_date := nicaragua_date + INTERVAL '1 day';
                 END IF;
             END IF;
+
+            -- Convertir de vuelta a timestamp con zona horaria
+            due_date := (nicaragua_date::TEXT || ' 00:00:00 America/Managua')::TIMESTAMP WITH TIME ZONE;
+
+            -- Guardar la última fecha de vencimiento para actualizar el préstamo
+            IF i = installment_count THEN
+                final_due_date := due_date;
+            END IF;
+
+            -- Calcular porciones (todas enteras excepto posiblemente la última)
+            IF i < installment_count THEN
+                principal_portion := base_principal;
+                interest_portion := base_interest;
+            ELSE
+                -- Última cuota lleva todo el remanente
+                principal_portion := remaining_principal;
+                interest_portion := remaining_interest;
+            END IF;
+
+            -- Insertar cuota con fechas corregidas para Nicaragua
+            INSERT INTO business.installments (
+                loan_id,
+                installment_number,
+                principal_amount,
+                normal_interest_amount,
+                late_interest_amount,
+                paid_amount,
+                due_date,
+                payment_date,
+                installment_status,
+                is_deleted
+            ) VALUES (
+                         NEW.loan_id,
+                         installment_num,
+                         ROUND(principal_portion, 2),
+                         ROUND(interest_portion, 2),
+                         0,
+                         0,
+                         due_date AT TIME ZONE 'UTC',  -- Almacenado en UTC
+                         NULL,                         -- Fecha de pago inicialmente nula
+                         'Pendiente',
+                         false
+                     );
+
+            -- Actualizar variables de seguimiento
+            remaining_principal := remaining_principal - principal_portion;
+            remaining_interest := remaining_interest - interest_portion;
+            installment_num := installment_num + 1;
+
+            -- Para pagos diarios, actualizar due_date para la siguiente iteración
+            IF NEW.payment_frequency = 'Diario' THEN
+                due_date := (nicaragua_date::TEXT || ' 00:00:00 America/Managua')::TIMESTAMP WITH TIME ZONE;
+            END IF;
         END LOOP;
+
+    -- Actualizar la fecha de vencimiento final en la tabla de préstamos
+    UPDATE business.loans
+    SET due_date = final_due_date AT TIME ZONE 'UTC'
+    WHERE loan_id = NEW.loan_id;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Create trigger
+CREATE TRIGGER trg_generate_installments
+    AFTER INSERT ON business.loans
+    FOR EACH ROW
+EXECUTE FUNCTION generate_installments();

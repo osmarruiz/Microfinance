@@ -27,14 +27,17 @@
                     <div class="mb-4">
                         <h5 class="text-primary border-bottom pb-2"><i class="fas fa-info-circle me-2"></i>Información del Préstamo</h5>
                         <dl class="row">
-                            <dt class="col-sm-4 text-muted">Monto:</dt>
-                            <dd class="col-sm-8">@Model.Amount.ToString("C")</dd>
+                            <dt class="col-sm-4 text-muted">Capital:</dt>
+                            <dd class="col-sm-8">C$@Model.PrincipalAmount</dd>
                             
-                            <dt class="col-sm-4 text-muted">Saldo Actual:</dt>
-                            <dd class="col-sm-8">@Model.CurrentBalance.ToString("C")</dd>
+                            <dt class="col-sm-4 text-muted">Intereses:</dt>
+                            <dd class="col-sm-8">C$@Model.NormalInterestAmount</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Intereses Moratorio:</dt>
+                            <dd class="col-sm-8">C$@Model.LateInterestAmount</dd>
                             
                             <dt class="col-sm-4 text-muted">Tasa de Interés:</dt>
-                            <dd class="col-sm-8">@Model.InterestRate.ToString("0.00")%</dd>
+                            <dd class="col-sm-8">@Model.MonthlyInterestRate.ToString("0.00")%</dd>
                             
                             <dt class="col-sm-4 text-muted">Plazo:</dt>
                             <dd class="col-sm-8">@Model.TermMonths meses</dd>
@@ -56,8 +59,6 @@
                             <dt class="col-sm-4 text-muted">Frecuencia de Pago:</dt>
                             <dd class="col-sm-8">@Model.PaymentFrequency</dd>
                             
-                            <dt class="col-sm-4 text-muted">Días Restantes:</dt>
-                            <dd class="col-sm-8">@((Model.DueDate - DateTime.Now).Days) días</dd>
                         </dl>
                     </div>
                 </div>
@@ -71,7 +72,7 @@
                         <dl class="row">
                             <dt class="col-sm-4 text-muted">Nombre:</dt>
                             <dd class="col-sm-8">
-                                <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Customer.CustomerId">
+                                <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Customer.CustomerId" class="link-primary">
                                     @Model.Customer.FullName
                                 </a>
                             </dd>
@@ -86,9 +87,7 @@
                         <dl class="row">
                             <dt class="col-sm-4 text-muted">Nombre:</dt>
                             <dd class="col-sm-8">
-                                <a asp-controller="Sellers" asp-action="Details" asp-route-id="@Model.Seller.Id">
                                     @Model.Seller.UserName
-                                </a>
                             </dd>
                         </dl>
                     </div>
@@ -117,20 +116,26 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            
+
+            function actionsCellRenderer(params) {
+                const installmentId = params.data.installmentId;
+                return `
+                <a class="link-secondary" href="/Installments/Details/${installmentId}">Detalles</a> 
+            `;
+            }
             
             const columnDefs = [
-                { 
-                    headerName: "Cuota N°", 
+                {
+                    headerName: "Cuota N°",
                     field: "installmentNumber",
                     width: 100,
-                    sortable: true,
-                    filter: true
+                    sort: 'asc',
+                    type: 'numericColumn'
                 },
                 {
                     headerName: "Monto Total",
-                    field: "installmentAmount",
-                    valueFormatter: params => `C$${params.value.toFixed(2)}`,
+                    field: "principalAmount",
+                    valueGetter: params => `C$${((params.data.principalAmount || 0) + (params.data.normalInterestAmount || 0) + (params.data.lateInterestAmount || 0)).toFixed(2)}`,
                     width: 120,
                     cellClass: 'text-end',
                     type: 'numericColumn'
@@ -145,7 +150,7 @@
                 },
                 {
                     headerName: "Saldo Pendiente",
-                    valueGetter: params => (params.data.installmentAmount || 0) - (params.data.paidAmount || 0),
+                    valueGetter: params => ((params.data.principalAmount || 0) + (params.data.normalInterestAmount || 0) + (params.data.lateInterestAmount || 0)) - (params.data.paidAmount || 0),
                     cellRenderer: params => {
                         const balance = Number(params.value) || 0;
                         const span = document.createElement('span');
@@ -154,19 +159,18 @@
                         span.textContent = `C$${balance.toFixed(2)}`;
                         return span;
                     },
-                    comparator: (valueA, valueB) => Number(valueA) - Number(valueB),
-                    width: 150,
-                    cellClass: 'text-end'
+                    cellClass: 'text-end',
+                    type: 'numericColumn',
+                    comparator: (valueA, valueB) => Number(valueA) - Number(valueB) // Para ordenamiento correcto
                 },
-                { 
-                    headerName: "Vencimiento", 
+                {
+                    headerName: "Vencimiento",
                     field: "dueDate",
                     valueFormatter: params => new Date(params.value).toLocaleDateString('es-ES'),
-                    filter: 'agDateColumnFilter',
                     width: 150
                 },
-                { 
-                    headerName: "Estado", 
+                {
+                    headerName: "Estado",
                     field: "installmentStatus",
                     cellRenderer: params => {
                         const status = params.value;
@@ -180,14 +184,7 @@
                 },
                 {
                     headerName: "Acciones",
-                    cellRenderer: params => {
-                        const installmentId = params.data.installmentId;
-                        return `
-                            <a href="/Installments/Details/${installmentId}" class="link-primary">
-                                Detalles
-                            </a>
-                        `;
-                    },
+                    cellRenderer: actionsCellRenderer,
                     width: 100,
                     sortable: false,
                     filter: false
