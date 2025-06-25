@@ -44,23 +44,19 @@ namespace Microfinance.Migrations
                         .HasColumnName("affected_table");
 
                     b.Property<DateTimeOffset>("LogTime")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("log_time")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("log_time");
 
                     b.Property<int>("RecordId")
                         .HasColumnType("integer")
                         .HasColumnName("record_id");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("user_id");
 
-                    b.HasKey("AuditId")
-                        .HasName("audit_log_pkey");
+                    b.HasKey("AuditId");
 
                     b.HasIndex("UserId");
 
@@ -83,9 +79,7 @@ namespace Microfinance.Migrations
                         .HasColumnName("collector_id");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
                     b.Property<int>("LoanId")
@@ -106,8 +100,7 @@ namespace Microfinance.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("notes");
 
-                    b.HasKey("CollectionId")
-                        .HasName("collection_management_pkey");
+                    b.HasKey("CollectionId");
 
                     b.HasIndex("CollectorId");
 
@@ -144,30 +137,25 @@ namespace Microfinance.Migrations
 
                     b.Property<string>("IdCard")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
                         .HasColumnName("id_card");
 
                     b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("character varying(15)")
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)")
                         .HasColumnName("phone_number");
 
-                    b.HasKey("CustomerId")
-                        .HasName("customers_pkey");
+                    b.HasKey("CustomerId");
 
                     b.ToTable("customers", "business");
                 });
@@ -185,11 +173,6 @@ namespace Microfinance.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("due_date");
 
-                    b.Property<decimal>("InstallmentAmount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasColumnName("installment_amount");
-
                     b.Property<int>("InstallmentNumber")
                         .HasColumnType("integer")
                         .HasColumnName("installment_number");
@@ -201,19 +184,22 @@ namespace Microfinance.Migrations
                         .HasColumnName("installment_status");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
-                    b.Property<decimal>("LateFee")
+                    b.Property<decimal>("LateInterestAmount")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
-                        .HasColumnName("late_fee");
+                        .HasColumnName("late_interest_amount");
 
                     b.Property<int>("LoanId")
                         .HasColumnType("integer")
                         .HasColumnName("loan_id");
+
+                    b.Property<decimal>("NormalInterestAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("normal_interest_amount");
 
                     b.Property<decimal>("PaidAmount")
                         .HasPrecision(10, 2)
@@ -224,8 +210,12 @@ namespace Microfinance.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("payment_date");
 
-                    b.HasKey("InstallmentId")
-                        .HasName("installments_pkey");
+                    b.Property<decimal>("PrincipalAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("principal_amount");
+
+                    b.HasKey("InstallmentId");
 
                     b.HasIndex("LoanId");
 
@@ -241,16 +231,6 @@ namespace Microfinance.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LoanId"));
 
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasColumnName("amount");
-
-                    b.Property<decimal>("CurrentBalance")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasColumnName("current_balance");
-
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer")
                         .HasColumnName("customer_id");
@@ -259,16 +239,14 @@ namespace Microfinance.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("due_date");
 
-                    b.Property<decimal>("InterestRate")
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<decimal>("LateInterestAmount")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
-                        .HasColumnName("interest_rate");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_deleted");
+                        .HasColumnName("late_interest_amount");
 
                     b.Property<string>("LoanStatus")
                         .IsRequired()
@@ -276,11 +254,26 @@ namespace Microfinance.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("loan_status");
 
+                    b.Property<decimal>("MonthlyInterestRate")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("monthly_interest_rate");
+
+                    b.Property<decimal>("NormalInterestAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("normal_interest_amount");
+
                     b.Property<string>("PaymentFrequency")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("payment_frequency");
+
+                    b.Property<decimal>("PrincipalAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("principal_amount");
 
                     b.Property<string>("SellerId")
                         .IsRequired()
@@ -289,17 +282,14 @@ namespace Microfinance.Migrations
                         .HasColumnName("seller_id");
 
                     b.Property<DateTimeOffset>("StartDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("start_date");
 
                     b.Property<int>("TermMonths")
                         .HasColumnType("integer")
                         .HasColumnName("term_months");
 
-                    b.HasKey("LoanId")
-                        .HasName("loans_pkey");
+                    b.HasKey("LoanId");
 
                     b.HasIndex("CustomerId");
 
@@ -328,9 +318,7 @@ namespace Microfinance.Migrations
                         .HasColumnName("installment_id");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false)
                         .HasColumnName("is_deleted");
 
                     b.Property<decimal>("PaidAmount")
@@ -339,18 +327,15 @@ namespace Microfinance.Migrations
                         .HasColumnName("paid_amount");
 
                     b.Property<DateTimeOffset>("PaymentDate")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("payment_date")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("payment_date");
 
                     b.Property<string>("Reference")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("reference");
 
-                    b.HasKey("PaymentId")
-                        .HasName("payments_pkey");
+                    b.HasKey("PaymentId");
 
                     b.HasIndex("CollectorId");
 
@@ -563,10 +548,7 @@ namespace Microfinance.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("audit_log_user_id_fkey");
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });

@@ -51,7 +51,7 @@ public class Customer
 
     [Column("is_deleted")]
     [Display(Name = "Eliminado")]
-    public bool IsDeleted { get; set; }
+    public bool IsDeleted { get; set; } = false;
 
     // Relaciones
     public ICollection<Loan> Loans { get; set; } = new List<Loan>();

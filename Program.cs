@@ -6,6 +6,7 @@ using Microfinance.Data;
 using Microfinance.Helpers;
 using Microfinance.Middleware;
 using Microfinance.Services;
+using Microfinance.Workers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,10 @@ builder.Services.AddControllersWithViews()
     .AddRazorRuntimeCompilation(); 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
-
+builder.Services.AddHostedService<LateInterestCalculatorService>();
+builder.Services.AddHostedService<LoanStatusBackgroundService>();
+builder.Services.AddHostedService<InstallmentStatusBackgroundService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login"; // O la ruta de tu vista de login si no usas las vistas por defecto de Identity

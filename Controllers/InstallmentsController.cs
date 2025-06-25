@@ -58,7 +58,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("InstallmentId,LoanId,InstallmentNumber,InstallmentAmount,PaidAmount,LateFee,DueDate,PaymentDate,InstallmentStatus,IsDeleted")] Installment installment)
+        public async Task<IActionResult> Create([Bind("InstallmentId,LoanId,InstallmentNumber,InstallmentAmount,PaidAmount,LateFee,DueDate,InstallmentStatus,IsDeleted")] Installment installment)
         {
             if (ModelState.IsValid)
             {

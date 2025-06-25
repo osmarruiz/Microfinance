@@ -22,81 +22,73 @@
                             <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId" required>
                                 <option value="">Seleccione un cliente</option>
                             </select>
-                            <label>Cliente</label>
+                            <label asp-for="CustomerId"></label>
                             <span asp-validation-for="CustomerId" class="text-danger small"></span>
                         </div>
                     </div>
 
-                    <!-- Campo de Vendedor (solo visualización) -->
+                    <!-- Vendedor -->
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
-                            <input class="form-control" 
-                                   value="@ViewData["CurrentSellerName"]" 
-                                   readonly />
+                            <input class="form-control" value="@ViewData["CurrentSellerName"]" readonly />
                             <label>Vendedor</label>
-                            <span asp-validation-for="SellerId" class="text-danger small"></span>
+                        </div>
+                        <input type="hidden" asp-for="SellerId" />
+                    </div>
+
+                    <!-- Monto Principal -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input asp-for="PrincipalAmount" class="form-control" placeholder=" " required
+                                   type="number" step="0.01" min="0"/>
+                            <label asp-for="PrincipalAmount"></label>
+                            <span asp-validation-for="PrincipalAmount" class="text-danger small"></span>
                         </div>
                     </div>
-                    
-                    
-                    <div class="form-floating mb-3">
-                        <input type="hidden" asp-for="SellerId" value="@ViewData["CurrentSellerId"]" />
+
+                    <!-- Tasa de Interés Mensual -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input asp-for="MonthlyInterestRate" class="form-control" placeholder=" " required
+                                   type="number" step="0.01" min="0" max="100"/>
+                            <label asp-for="MonthlyInterestRate"></label>
+                            <span asp-validation-for="MonthlyInterestRate" class="text-danger small"></span>
                         </div>
-
-                        <!-- Monto -->
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
-                                <input asp-for="Amount" class="form-control" placeholder=" " required
-                                       type="number" step="0.01"/>
-                                <label>Monto del préstamo</label>
-                                <span asp-validation-for="Amount" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-
-                        <!-- Tasa de Interés -->
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
-                                <input asp-for="InterestRate" class="form-control" placeholder=" " required
-                                       type="number" step="0.01" min="0" max="100" readonly/>
-                                <label>Tasa de interés (%)</label>
-                                <span asp-validation-for="InterestRate" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-                        <!-- Plazo en Meses -->
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
-                                <input asp-for="TermMonths" class="form-control" placeholder=" " required value="1" max="3"
-                                       type="number" min="1"/>
-                                <label>Plazo (meses)</label>
-                                <span asp-validation-for="TermMonths" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-
-                        <!-- Frecuencia de Pago -->
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
-                                <select asp-for="PaymentFrequency" class="form-control" required>
-                                    <option value="">Seleccione frecuencia</option>
-                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Diario">Diario</option>
-                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Semanal">Semanal</option>
-                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Quincenal">Quincenal</option>
-                                    <option value="@Microfinance.Models.Business.PaymentFrequencyEnum.Mensual">Mensual</option>
-                                </select>
-                                <label>Frecuencia de pago</label>
-                                <span asp-validation-for="PaymentFrequency" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-
-                    <input asp-for="DueDate" class="form-control" placeholder=" " required
-                           type="hidden" readonly id="dueDateInput"/>
-                        <!-- Estado del Préstamo (oculto, valor por defecto) -->
-                        <input type="hidden" asp-for="LoanStatus" value="@Microfinance.Models.Business.LoanStatusEnum.Activo"/>
-                        <input type="hidden" asp-for="IsDeleted" value="false"/>
                     </div>
+
+                    <!-- Plazo en Meses -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input asp-for="TermMonths" class="form-control" placeholder=" " required
+                                   type="number" min="1" value="1" max="36" id="termMonthsInput"/>
+                            <label asp-for="TermMonths"></label>
+                            <span asp-validation-for="TermMonths" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Frecuencia de Pago -->
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <select asp-for="PaymentFrequency" class="form-control" required>
+                                <option value="">Seleccione frecuencia</option>
+                                <option value="Diario">Diario</option>
+                                <option value="Semanal">Semanal</option>
+                                <option value="Quincenal">Quincenal</option>
+                                <option value="Mensual">Mensual</option>
+                            </select>
+                            <label asp-for="PaymentFrequency"></label>
+                            <span asp-validation-for="PaymentFrequency" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Campos ocultos -->
+                    <input type="hidden" asp-for="NormalInterestAmount" />
+                    <input type="hidden" asp-for="LateInterestAmount" value="0" />
+                    <input type="hidden" asp-for="DueDate" id="dueDateInput" />
+                    <input type="hidden" asp-for="LoanStatus" value="Activo" />
+                    <input type="hidden" asp-for="IsDeleted" value="false" />
+                    <input type="hidden" asp-for="StartDate" value="@DateTimeOffset.UtcNow.ToString("o")" />
+                </div>
 
                 <div class="d-flex justify-content-between mt-4">
                     <a asp-action="Index" class="btn btn-outline-secondary">
@@ -116,7 +108,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const termMonthsInput = document.getElementById('TermMonths');
+            const termMonthsInput = document.getElementById('termMonthsInput');
             const dueDateInput = document.getElementById('dueDateInput');
 
             termMonthsInput.addEventListener('change', function() {
@@ -125,9 +117,7 @@
                     const today = new Date();
                     const dueDate = new Date();
                     dueDate.setMonth(today.getMonth() + termMonths);
-
-                    // Formato YYYY-MM-DD (ISO para input type="date")
-                    dueDateInput.value = dueDate.toISOString().split('T')[0];
+                    dueDateInput.value = dueDate.toISOString();
                 }
             });
 
@@ -135,6 +125,6 @@
             if (termMonthsInput.value > 0) {
                 termMonthsInput.dispatchEvent(new Event('change'));
             }
-});
+        });
     </script>
 }

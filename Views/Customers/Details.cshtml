@@ -50,17 +50,17 @@
                             <dt class="col-sm-4 text-muted">Correo Electrónico:</dt>
                             <dd class="col-sm-8">@Model.Email</dd>
                             
-                            <dt class="col-sm-4 text-muted">Estado:</dt>
-                            <dd class="col-sm-8">
-                                @if(Model.IsActive) {
-                                    <span class="badge bg-success">Activo</span>
-                                } else {
-                                    <span class="badge bg-secondary">Inactivo</span>
-                                }
-                            </dd>
                         </dl>
                     </div>
                 </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="fas fa-receipt me-2"></i>Historial de Prestamos
+                </h5>
+        
+                <div id="loansGrid" style="height: 300px; width:100%;" class="ag-theme-alpine"></div>
             </div>
             
             <!-- Sección de Acciones -->
@@ -82,3 +82,77 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            function actionsCellRenderer(params) {
+                const loanId = params.data.loanId;
+                return `
+                <a class="link-secondary" href="/Loans/Details/${loanId}">Detalles</a> 
+            `;
+            }
+
+            const columnDefs = [
+                {
+                    headerName: "Capital",
+                    field: "principalAmount",
+                    valueFormatter: params => `C$${params.value.toFixed(2)}`,
+                    type: 'numericColumn',
+                    cellClass: 'text-end'
+                },
+                {
+                    headerName: "Total",
+                    field: "totalAmount",
+                    valueGetter: params => {
+                        const principal = params.data.principalAmount || 0;
+                        const normalInterest = params.data.normalInterestAmount || 0;
+                        const lateInterest = params.data.lateInterestAmount || 0;
+                        return principal + normalInterest + lateInterest;
+                    },
+                    valueFormatter: params => `C$${params.value.toFixed(2)}`,
+                    type: 'numericColumn',
+                    cellClass: 'text-end'
+                },
+                {
+                    headerName: "Vencimiento",
+                    field: "dueDate",
+                    valueFormatter: params => new Date(params.value).toLocaleDateString('es-ES')
+                },
+                {
+                    headerName: "Frecuencia Pago",
+                    field: "paymentFrequency"
+                },
+                {
+                    headerName: "Estado",
+                    field: "loanStatus",
+                    cellRenderer: params => {
+                        const status = params.value;
+                        let badgeClass = 'bg-secondary';
+                        if (status === 'Activo') badgeClass = 'bg-success';
+                        if (status === 'Vencido') badgeClass = 'bg-warning text-dark';
+                        if (status === 'Cancelado') badgeClass = 'bg-primary';
+                        return `<span class="badge ${badgeClass}">${status}</span>`;
+                    }
+                },
+                {
+                    headerName: "Acciones",
+                    cellRenderer: actionsCellRenderer,
+                    width: 150,
+                    sortable: false,
+                    filter: false
+                }
+            ];
+
+            const loansData = @Html.Raw(Json.Serialize(Model.Loans));
+            
+            console.log(loansData);
+            
+            const gridOptions = getGridOptions(columnDefs, loansData);
+
+            const gridDiv = document.querySelector('#loansGrid');
+            new agGrid.createGrid(gridDiv, gridOptions);
+        });
+    </script>
+}

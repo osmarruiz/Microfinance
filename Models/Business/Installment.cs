@@ -15,17 +15,25 @@ public class Installment
 
     [Column("installment_number")] public int InstallmentNumber { get; set; }
 
-    [Column("installment_amount")]
+    [Column("principal_amount")]
     [Precision(10, 2)]
-    public decimal InstallmentAmount { get; set; }
-
+    public decimal PrincipalAmount { get; set; }
+    
+    [Required(ErrorMessage = "El interes actual es requerido")]
+    [Range(0, double.MaxValue, ErrorMessage = "El interes no puede ser negativo")]
+    [Column("normal_interest_amount")]
+    [Precision(10, 2)]
+    public decimal NormalInterestAmount { get; set; }
+    
+    [Required(ErrorMessage = "El interes moratirio actual es requerido")]
+    [Range(0, double.MaxValue, ErrorMessage = "El interes moratorio no puede ser negativo")]
+    [Column("late_interest_amount")]
+    [Precision(10, 2)]
+    public decimal LateInterestAmount { get; set; } = 0;
+    
     [Column("paid_amount")]
     [Precision(10, 2)]
     public decimal PaidAmount { get; set; }
-
-    [Column("late_fee")]
-    [Precision(10, 2)]
-    public decimal LateFee { get; set; }
 
     [Column("due_date")] public DateTimeOffset DueDate { get; set; }
 
@@ -35,7 +43,7 @@ public class Installment
     [MaxLength(20)]
     public string InstallmentStatus { get; set; } = InstallmentStatusEnum.Pendiente;
 
-    [Column("is_deleted")] public bool IsDeleted { get; set; }
+    [Column("is_deleted")] public bool IsDeleted { get; set; } = false;
 
     // Relaciones
     public Loan Loan { get; set; } = null!;

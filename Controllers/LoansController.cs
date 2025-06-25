@@ -53,24 +53,19 @@ namespace Microfinance.Controllers
         // GET: Loans/Create
         public async Task<IActionResult> Create()
         {
-            // Obtener el usuario actual
             var currentUser = await _userManager.GetUserAsync(User);
-    
+
             var model = new Loan
             {
                 DueDate = DateTimeOffset.UtcNow.AddMonths(1),
-                LoanStatus = LoanStatusEnum.Activo,
-                Amount = 4000.00m,  // Monto predeterminado
-                IsDeleted = false,
-                InterestRate = 15.0m,
+                PrincipalAmount = 4000.00m,
+                MonthlyInterestRate = 15.0m,
+                SellerId = currentUser?.Id
             };
 
-            ViewData["CustomerId"] = new SelectList(_context.Customers.OrderBy(c => c.FullName), "CustomerId", "FullName");
-    
-            // Pasar el nombre del vendedor a la vista
+            ViewData["CustomerId"] = new SelectList(_context.Customers.Where(c => c.IsActive).OrderBy(c => c.FullName), "CustomerId", "FullName");
             ViewData["CurrentSellerName"] = currentUser?.UserName ?? "No identificado";
-            ViewData["CurrentSellerId"] = currentUser?.Id ?? "No identificado";
-
+    
             return View(model);
         }
 
@@ -79,23 +74,24 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            [Bind("LoanId,CustomerId,SellerId,Amount,CurrentBalance,InterestRate,TermMonths,StartDate,DueDate,PaymentFrequency")] Loan loan)
+        public async Task<IActionResult> Create(Loan loan)
         {
             var currentUser = await _userManager.GetUserAsync(User);
-    
-            // Asignar valores automáticos
-            loan.LoanStatus = LoanStatusEnum.Activo;
-            loan.IsDeleted = false;
-    
-            loan.SellerId = currentUser?.Id ?? string.Empty; // Asignar el ID del vendedor actual
+            loan.SellerId = currentUser?.Id;
             
             if (ModelState.IsValid)
             {
                 try
                 {
-                    loan.CurrentBalance = loan.Amount; 
-                    loan.DueDate = loan.DueDate.ToUniversalTime();
+                    // Calcular intereses normales
+                    loan.NormalInterestAmount = loan.PrincipalAmount * (loan.MonthlyInterestRate / 100) * loan.TermMonths;
+            
+                    // Asignar valores automáticos
+                    loan.StartDate = DateTimeOffset.UtcNow;
+                    loan.LoanStatus = "Activo";
+                    loan.IsDeleted = false;
+                    loan.LateInterestAmount = 0;
+
                     _context.Add(loan);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -106,15 +102,13 @@ namespace Microfinance.Controllers
                 }
             }
 
-            // Recargar datos para la vista
             ViewData["CustomerId"] = new SelectList(
-                _context.Customers.OrderBy(c => c.FullName), 
+                _context.Customers.Where(c => c.IsActive).OrderBy(c => c.FullName), 
                 "CustomerId", 
                 "FullName", 
                 loan.CustomerId
             );
             ViewData["CurrentSellerName"] = currentUser?.UserName ?? "No identificado";
-            ViewData["CurrentSellerId"] = currentUser?.Id ?? "No identificado";
     
             return View(loan);
         }

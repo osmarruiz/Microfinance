@@ -34,6 +34,7 @@ namespace Microfinance.Controllers
             }
 
             var customer = await _context.Customers
+                .Include(m => m.Loans)
                 .FirstOrDefaultAsync(m => m.CustomerId == id);
             if (customer == null)
             {

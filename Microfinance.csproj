@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <Folder Include="Models\Business\" />
-    <Folder Include="ViewModels\Business\" />
   </ItemGroup>
 
 </Project>
