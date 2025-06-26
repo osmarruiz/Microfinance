@@ -4,6 +4,7 @@
     ViewData["Title"] = "Registrar Pago";
     
     var installment = ViewBag.Installment as Microfinance.Models.Business.Installment;
+    var mount = installment?.PrincipalAmount + installment?.NormalInterestAmount + installment?.LateInterestAmount - installment?.PaidAmount;
     Layout = "_Layout";
 }
 
@@ -26,7 +27,7 @@
                     <!-- Amount -->
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
-                            <input type="number" asp-for="PaidAmount" class="form-control" placeholder=" " min="1" max="@installment?.PrincipalAmount" value="@installment?.PrincipalAmount"/>
+                            <input type="number" asp-for="PaidAmount" class="form-control" placeholder=" " min="1" max="@mount " value="@mount" step="0.01"/>
                             <label asp-for="PaidAmount"></label>
                             <span asp-validation-for="PaidAmount" class="text-danger small"></span>
                         </div>

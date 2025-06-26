@@ -22,7 +22,7 @@ public class Payment
 
     [Column("payment_date")]
     [DisplayName("Fecha de Pago")]
-    public DateTimeOffset PaymentDate { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? PaymentDate { get; set; } = DateTimeOffset.UtcNow;
 
     [Column("paid_amount")]
     [Precision(10, 2)]

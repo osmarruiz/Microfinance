@@ -33,6 +33,14 @@
 
         // Definición de columnas para la tabla de Pagos
         const paymentColumnDefs = [
+            
+            {
+                headerName: "ID de Pago",
+                field: "paymentId",
+                width: 120,
+                cellClass: 'text-end',
+                type: 'numericColumn'
+            },
             {
                 headerName: "Fecha de Pago",
                 field: "paymentDate",
@@ -78,6 +86,7 @@
             {
                 headerName: "Referencia",
                 field: "reference",
+                valueGetter: params => params.data.reference || 'Sin referencia',
                 width: 180
             }
         ];

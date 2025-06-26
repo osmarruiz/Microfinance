@@ -44,6 +44,7 @@
                 headerName: "Notas", 
                 field: "notes",
                 width: 300,
+                valueGetter: params => params.data.notes || 'Sin notas', // Asegurarse de que notes no sea undefined
                 // Opcional: limitar el texto y mostrar tooltip
                 cellRenderer: params => {
                     const notes = params.value || '';
