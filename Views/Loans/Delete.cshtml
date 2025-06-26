@@ -1,3 +1,4 @@
+@using Microfinance.Models.Business
 @model Microfinance.Models.Business.Loan
 
 @{
@@ -15,6 +16,16 @@
         </div>
         
         <div class="card-body">
+            <!-- Mostrar mensaje de error si existe -->
+            @if (ViewData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> @ViewData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            
             <h4 class="text-danger mb-4">¿Está seguro que desea eliminar este préstamo?</h4>
             
             <div class="row g-3">
@@ -59,7 +70,7 @@
                                 @if(Model.IsDeleted) {
                                     <span class="badge bg-secondary">Eliminado</span>
                                 } else {
-                                    <span class="badge @(Model.LoanStatus == "Active" ? "bg-success" : "bg-warning")">
+                                    <span class="badge @(Model.LoanStatus == "Activo" ? "bg-success" : Model.LoanStatus == "Cancelado" ? "bg-secondary" : "bg-warning")">
                                         @Html.DisplayFor(model => model.LoanStatus)
                                     </span>
                                 }
@@ -75,7 +86,16 @@
                     <i class="fas fa-exclamation-circle fs-3 me-3 d-none d-sm-block"></i>
                     <div>
                         <h5 class="alert-heading">¡Atención!</h5>
-                        <p class="mb-0">Esta acción eliminará permanentemente el registro del préstamo. Todos los datos asociados se perderán y no podrán recuperarse.</p>
+                        <p class="mb-0">
+                            @if (Model.LoanStatus == LoanStatusEnum.Cancelado)
+                            {
+                                <text>Esta acción marcará el préstamo como eliminado (soft delete). Todos los datos asociados (cuotas, pagos, etc.) también se marcarán como eliminados.</text>
+                            }
+                            else
+                            {
+                                <text>Solo se pueden eliminar préstamos con estado <strong>"Cancelado"</strong>. El estado actual es <strong>"@Model.LoanStatus"</strong>.</text>
+                            }
+                        </p>
                     </div>
                 </div>
             </div>
@@ -87,9 +107,18 @@
                     <a asp-action="Index" class="btn btn-outline-secondary order-sm-1 flex-sm-fill">
                         <i class="fas fa-arrow-left me-2"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn btn-danger order-sm-2 flex-sm-fill">
-                        <i class="fas fa-trash-alt me-2"></i>Eliminar
-                    </button>
+                    @if (Model.LoanStatus == LoanStatusEnum.Cancelado && !Model.IsDeleted)
+                    {
+                        <button type="submit" class="btn btn-danger order-sm-2 flex-sm-fill">
+                            <i class="fas fa-trash-alt me-2"></i>Eliminar
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-danger order-sm-2 flex-sm-fill disabled">
+                            <i class="fas fa-ban me-2"></i>No se puede eliminar
+                        </button>
+                    }
                 </div>
             </form>
         </div>

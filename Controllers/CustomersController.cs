@@ -141,6 +141,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Customers/Delete/5
+        [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -149,12 +150,17 @@ namespace Microfinance.Controllers
             }
 
             var customer = await _context.Customers
+                .Include(c => c.Loans.Where(l => !l.IsDeleted))
                 .FirstOrDefaultAsync(m => m.CustomerId == id);
+
             if (customer == null)
             {
                 return NotFound();
             }
 
+            // Pasar información sobre préstamos activos a la vista
+            ViewBag.HasActiveLoans = customer.Loans.Any();
+            ViewBag.ActiveLoansCount = customer.Loans.Count;
             return View(customer);
         }
 
@@ -163,13 +169,26 @@ namespace Microfinance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer != null)
+            var customer = await _context.Customers
+                .Include(c => c.Loans.Where(l => !l.IsDeleted))
+                .FirstOrDefaultAsync(c => c.CustomerId == id);
+
+            if (customer == null)
             {
-                _context.Customers.Remove(customer);
+                return NotFound();
             }
 
+            if (customer.Loans.Any())
+            {
+                TempData["ErrorMessage"] = $"No se puede eliminar el cliente porque tiene {customer.Loans.Count} préstamo(s) activo(s). " +
+                                           "Primero debe cancelar y eliminar todos sus préstamos.";
+                return RedirectToAction(nameof(Delete), new { id });
+            }
+
+            _context.Customers.Remove(customer);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Cliente eliminado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 

@@ -25,7 +25,7 @@ namespace Microfinance.Controllers
         // GET: Payments
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Payments.Include(p => p.Collector).Include(p => p.Installment);
+            var applicationDbContext = _context.Payments.Include(p => p.Collector).Include(p => p.Installment).Where(p => !p.IsDeleted);
             return View(await applicationDbContext.ToListAsync());
         }
 

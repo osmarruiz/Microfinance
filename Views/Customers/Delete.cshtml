@@ -1,5 +1,4 @@
 @model Microfinance.Models.Business.Customer
-
 @{
     ViewData["Title"] = "Eliminar Cliente";
 }
@@ -15,6 +14,16 @@
         </div>
         
         <div class="card-body">
+            <!-- Mostrar mensaje de error si existe -->
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error:</strong> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
             <h4 class="text-danger mb-4">¿Está seguro que desea eliminar este cliente?</h4>
             
             <div class="row g-3">
@@ -56,18 +65,42 @@
                                     <span class="badge bg-secondary">Inactivo</span>
                                 }
                             </dd>
+                            
+                            <dt class="col-sm-4 text-muted">Préstamos activos:</dt>
+                            <dd class="col-sm-8">
+                                @if (ViewBag.HasActiveLoans)
+                                {
+                                    <span class="badge bg-danger">Sí (@ViewBag.ActiveLoansCount)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">No</span>
+                                }
+                            </dd>
                         </dl>
                     </div>
                 </div>
             </div>
             
-            <!-- Advertencia -->
-            <div class="alert alert-warning mt-4">
+            <!-- Advertencia dinámica según estado -->
+            <div class="alert @(ViewBag.HasActiveLoans ? "alert-danger" : "alert-warning") mt-4">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-circle fs-3 me-3 d-none d-sm-block"></i>
+                    <i class="fas @(ViewBag.HasActiveLoans ? "fa-ban" : "fa-exclamation-circle") fs-3 me-3 d-none d-sm-block"></i>
                     <div>
                         <h5 class="alert-heading">¡Atención!</h5>
-                        <p class="mb-0">Esta acción eliminará permanentemente el registro del cliente. Todos los datos asociados se perderán y no podrán recuperarse.</p>
+                        @if (ViewBag.HasActiveLoans)
+                        {
+                            <p class="mb-2">No se puede eliminar este cliente porque tiene préstamos activos asociados.</p>
+                            <p class="mb-0">Para eliminar al cliente, primero debe cancelar y eliminar todos sus préstamos.</p>
+                            <a asp-controller="Loans" asp-action="Index" asp-route-customerId="@Model.CustomerId" 
+                               class="btn btn-outline-danger btn-sm mt-2">
+                                <i class="fas fa-list me-1"></i> Ver préstamos del cliente
+                            </a>
+                        }
+                        else
+                        {
+                            <p class="mb-0">Esta acción eliminará permanentemente el registro del cliente. Todos los datos asociados se perderán y no podrán recuperarse.</p>
+                        }
                     </div>
                 </div>
             </div>
@@ -79,9 +112,19 @@
                     <a asp-action="Index" class="btn btn-outline-secondary order-sm-1 flex-sm-fill">
                         <i class="fas fa-arrow-left me-2"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn btn-danger order-sm-2 flex-sm-fill">
-                        <i class="fas fa-trash-alt me-2"></i>Eliminar
-                    </button>
+                    @if (!ViewBag.HasActiveLoans)
+                    {
+                        <button type="submit" class="btn btn-danger order-sm-2 flex-sm-fill">
+                            <i class="fas fa-trash-alt me-2"></i>Eliminar
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-danger order-sm-2 flex-sm-fill disabled" 
+                                title="No se puede eliminar clientes con préstamos activos">
+                            <i class="fas fa-ban me-2"></i>No se puede eliminar
+                        </button>
+                    }
                 </div>
             </form>
         </div>
