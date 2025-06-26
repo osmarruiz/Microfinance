@@ -16,7 +16,7 @@ namespace Microfinance.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public LoansController(ApplicationDbContext context , UserManager<IdentityUser> userManager)
+        public LoansController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -25,7 +25,9 @@ namespace Microfinance.Controllers
         // GET: Loans
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Loans.Include(l => l.Customer).Include(l => l.Seller);
+            var applicationDbContext =
+                    _context.Loans.Include(l => l.Customer).Include(l => l.Seller).Where(l => !l.IsDeleted)
+                ;
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -64,9 +66,10 @@ namespace Microfinance.Controllers
                 SellerId = currentUser?.Id
             };
 
-            ViewData["CustomerId"] = new SelectList(_context.Customers.Where(c => c.IsActive).OrderBy(c => c.FullName), "CustomerId", "FullName");
+            ViewData["CustomerId"] = new SelectList(_context.Customers.Where(c => c.IsActive).OrderBy(c => c.FullName),
+                "CustomerId", "FullName");
             ViewData["CurrentSellerName"] = currentUser?.UserName ?? "No identificado";
-    
+
             return View(model);
         }
 
@@ -79,14 +82,15 @@ namespace Microfinance.Controllers
         {
             var currentUser = await _userManager.GetUserAsync(User);
             loan.SellerId = currentUser?.Id;
-            
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     // Calcular intereses normales
-                    loan.NormalInterestAmount = loan.PrincipalAmount * (loan.MonthlyInterestRate / 100) * loan.TermMonths;
-            
+                    loan.NormalInterestAmount =
+                        loan.PrincipalAmount * (loan.MonthlyInterestRate / 100) * loan.TermMonths;
+
                     // Asignar valores automáticos
                     loan.StartDate = DateTimeOffset.UtcNow;
                     loan.LoanStatus = "Activo";
@@ -104,13 +108,13 @@ namespace Microfinance.Controllers
             }
 
             ViewData["CustomerId"] = new SelectList(
-                _context.Customers.Where(c => c.IsActive).OrderBy(c => c.FullName), 
-                "CustomerId", 
-                "FullName", 
+                _context.Customers.Where(c => c.IsActive).OrderBy(c => c.FullName),
+                "CustomerId",
+                "FullName",
                 loan.CustomerId
             );
             ViewData["CurrentSellerName"] = currentUser?.UserName ?? "No identificado";
-    
+
             return View(loan);
         }
 
@@ -127,6 +131,7 @@ namespace Microfinance.Controllers
             {
                 return NotFound();
             }
+
             ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", loan.CustomerId);
             ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id", loan.SellerId);
             return View(loan);
@@ -137,7 +142,10 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("LoanId,CustomerId,SellerId,Amount,CurrentBalance,InterestRate,TermMonths,StartDate,DueDate,PaymentFrequency,LoanStatus,IsDeleted")] Loan loan)
+        public async Task<IActionResult> Edit(int id,
+            [Bind(
+                "LoanId,CustomerId,SellerId,Amount,CurrentBalance,InterestRate,TermMonths,StartDate,DueDate,PaymentFrequency,LoanStatus,IsDeleted")]
+            Loan loan)
         {
             if (id != loan.LoanId)
             {
@@ -162,8 +170,10 @@ namespace Microfinance.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CustomerId"] = new SelectList(_context.Customers, "CustomerId", "CustomerId", loan.CustomerId);
             ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id", loan.SellerId);
             return View(loan);
@@ -189,19 +199,52 @@ namespace Microfinance.Controllers
             return View(loan);
         }
 
-        // POST: Loans/Delete/5
+        // POST: Loans/Delete/5[HttpPost, ActionName("Delete")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var loan = await _context.Loans.FindAsync(id);
-            if (loan != null)
+            var loan = await _context.Loans
+                .Include(l => l.Installments)
+                .ThenInclude(i => i.Payments)
+                .Include(l => l.CollectionManagements)
+                .FirstOrDefaultAsync(l => l.LoanId == id);
+
+            if (loan == null || loan.IsDeleted)
             {
-                _context.Loans.Remove(loan);
+                return NotFound();
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            // Solo permitir soft delete si el préstamo está cancelado
+            if (loan.LoanStatus == LoanStatusEnum.Cancelado)
+            {
+                // Soft delete del préstamo
+                loan.IsDeleted = true;
+
+                // Soft delete en cascada de las cuotas relacionadas y sus pagos
+                foreach (var installment in loan.Installments)
+                {
+                    installment.IsDeleted = true;
+
+                    foreach (var payment in installment.Payments)
+                    {
+                        payment.IsDeleted = true;
+                    }
+                }
+
+                // Soft delete en cascada de los registros de cobro
+                foreach (var collection in loan.CollectionManagements)
+                {
+                    collection.IsDeleted = true;
+                }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Si no está cancelado, mostrar error en la vista
+            ViewData["ErrorMessage"] = "Solo se pueden eliminar préstamos con estado 'Cancelado'";
+            return View("Delete", loan);
         }
 
         private bool LoanExists(int id)
