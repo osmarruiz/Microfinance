@@ -202,7 +202,6 @@
             // Obtener solo las cuotas de este préstamo
             const installmentsData = @Html.Raw(Json.Serialize(Model.Installments));
 
-            console.log(@Html.Raw(Json.Serialize(Model)));
             const gridOptions = getGridOptions(columnDefs, installmentsData);
 
             const gridDiv = document.querySelector('#installmentGrid');

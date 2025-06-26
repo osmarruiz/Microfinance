@@ -183,8 +183,6 @@
             ];
 
             const paymentsData = @Html.Raw(Json.Serialize(Model.Payments));
-            
-            console.log(paymentsData);
 
             const gridOptions = getGridOptions(columnDefs, paymentsData);
 
