@@ -41,6 +41,7 @@ namespace Microfinance.Controllers
                 .Include(l => l.Customer)
                 .Include(l => l.Seller)
                 .Include(l => l.Installments)
+                .Include(l => l.CollectionManagements)
                 .FirstOrDefaultAsync(m => m.LoanId == id);
             if (loan == null)
             {

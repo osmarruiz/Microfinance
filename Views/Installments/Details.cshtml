@@ -124,17 +124,18 @@
             </div>
             
             <!-- Sección de Acciones -->
-            <div class="d-flex flex-column flex-md-row justify-content-between mt-4 pt-3 border-top">
-                <button class="btn btn-outline-secondary" onclick="window.history.back()">
-                    <i class="fas fa-arrow-left me-2"></i>Volver
-                </button>
-                <a asp-action="Create"
-                   asp-controller="CollectionManagements"
-                   asp-route-loanId="@Model.LoanId" 
-                   asp-route-installmentId="@Model.InstallmentId" 
-                   class="btn btn-success">
-                    Agregar gestión de cobro
-                </a>
+            <div class="d-flex flex-column flex-md-row justify-content-end mt-4 pt-3 border-top">
+                
+            @if (Model.PaidAmount < Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount)
+                {
+                    <a asp-action="Create"
+                       asp-controller="CollectionManagements"
+                       asp-route-loanId="@Model.LoanId"
+                       asp-route-installmentId="@Model.InstallmentId"
+                       class="btn btn-success">
+                        Agregar gestión de cobro
+                    </a>
+                }
             </div>
         </div>
     </div>
@@ -146,11 +147,39 @@
            
             
             const columnDefs = [
-                { headerName: "ID", field: "id", width: 80 },
-                { headerName: "Fecha", field: "date", width: 150 },
-                { headerName: "Monto", field: "amount", width: 120, cellClass: 'text-end' },
-                { headerName: "Cobrador", field: "collector", width: 150 },
-                { headerName: "Notas", field: "notes", flex: 1 }
+                {
+                    headerName: "ID de Pago",
+                    field: "paymentId",
+                    width: 120,
+                    cellClass: 'text-end',
+                    type: 'numericColumn'
+                },
+                { headerName: "Fecha de Pago", field: "paymentDate",
+                    valueFormatter: params => new Date(params.value).toLocaleDateString('es-ES'), width: 150 },
+                {
+                    headerName: "Monto Pagado",
+                    field: "paidAmount",
+                    // Formateo para Córdobas Nicaragüenses
+                    valueFormatter: params => `C$${params.value.toLocaleString('es-NI', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}`,
+                    width: 150,
+                    cellClass: 'text-end',
+                    type: 'numericColumn'
+                },
+                {
+                    headerName: "Cobrador",
+                    field: "collector.id", // Asumiendo que Payment tiene una propiedad Collector
+                    valueGetter: params => params.data.collector?.userName || params.data.collector?.id || '', // Mostrar el nombre o ID del cobrador
+                    width: 150
+                },
+                {
+                    headerName: "Referencia",
+                    field: "reference",
+                    valueGetter: params => params.data.reference || 'Sin referencia',
+                    width: 180
+                }
             ];
 
             const paymentsData = @Html.Raw(Json.Serialize(Model.Payments));

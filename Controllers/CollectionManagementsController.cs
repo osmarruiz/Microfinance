@@ -52,14 +52,14 @@ namespace Microfinance.Controllers
         // GET: CollectionManagements/Create
         public async Task<IActionResult> Create(int loanId, int installmentId)
         {
-
-            
             var currentUser = await _userManager.GetUserAsync(User);
-
+            var installment = await _context.Installments.FindAsync(installmentId); // Asume que tienes acceso al contexto
+    
             ViewData["CollectorId"] = currentUser?.Id ?? "No identificado";
             ViewData["LoanId"] = loanId;
-            ViewData["InstallmentId"] = installmentId; 
-
+            ViewData["InstallmentId"] = installmentId;
+            ViewData["PaidAmount"] = installment?.PaidAmount ?? 0; // Pasa el valor a la vista
+    
             return View();
         }
 

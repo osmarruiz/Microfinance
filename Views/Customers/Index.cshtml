@@ -37,7 +37,7 @@
             { headerName: "Teléfono", field: "phoneNumber", sortable: true }, 
             { headerName: "Dirección", field: "address", sortable: true, filter: true },
             { headerName: "Correo Electrónico", field: "email", sortable: true, filter: true }, 
-            { headerName: "Activo", field: "isActive", sortable: true },
+            { headerName: "Activo", field: "isActive", sortable: true},
             {
                 headerName: "Acciones",
                 field: "actions",
@@ -49,6 +49,7 @@
         
         const gridOptions = getGridOptions(columnDefs, @Html.Raw(Json.Serialize(Model)));
 
+        console.log(@Html.Raw(Json.Serialize(Model)));
         const gridDiv = document.querySelector('#customerGrid');
 
         if (gridDiv) {

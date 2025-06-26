@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Gestión de Cobranza";
+    Layout = "_Layout";
 }
 
 <div class="container mt-4">
@@ -26,8 +27,11 @@
                         <div class="form-floating mb-3">
                             <select asp-for="ManagementResult" class="form-control" required>
                                 <option value="">Seleccione un resultado</option>
+                                @if (ViewData["PaidAmount"] as decimal? <= 0)
+                                {
+                                    <option value="Pago completo">Pago completo</option>
+                                }
                                 <option value="Pago parcial">Pago parcial</option>
-                                <option value="Pago completo">Pago completo</option>
                                 <option value="No contactado">No contactado</option>
                             </select>
                             <label>Resultado de la gestión</label>
@@ -46,9 +50,9 @@
                 </div>
 
                 <div class="d-flex justify-content-between mt-4">
-                    <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Cancelar
-                    </a>
+                    <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </button>
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-check me-2"></i>Continuar
                     </button>

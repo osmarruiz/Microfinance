@@ -103,6 +103,14 @@
                 <div id="installmentGrid" class="ag-theme-alpine" style="height: 400px;"></div>
             </div>
             
+            <div class="mt-4 pt-3">
+                <h5 class="text-primary border-bottom pb-2 mb-3">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Gestiones de Cobranza
+                </h5>
+                
+                <div id="collectionManagementGrid" class="ag-theme-alpine" style="height: 400px;"></div>
+            </div>
+            
             <!-- Sección de Acciones -->
             <div class="d-flex flex-column flex-md-row justify-content-between mt-4 pt-3 border-top">
                 <button class="btn btn-outline-secondary" onclick="window.history.back()">
@@ -200,6 +208,71 @@
             const gridDiv = document.querySelector('#installmentGrid');
             if (gridDiv) {
                 new agGrid.createGrid(gridDiv, gridOptions);
+            }
+        });
+
+        function utcToLocalDateString(utcDateString) {
+            if (!utcDateString) return '';
+            try {
+                const date = new Date(utcDateString);
+                if (isNaN(date.getTime())) {
+                    return '';
+                }
+                return date.toLocaleDateString('es-ES');
+            } catch (e) {
+                console.error("Error al parsear fecha UTC:", utcDateString, e);
+                return '';
+            }
+        }
+
+        // Definición de columnas para la tabla de Gestión de Cobranza
+        const collectionManagementColumnDefs = [
+            {
+                headerName: "Fecha de Gestión",
+                field: "managementDate",
+                valueFormatter: params => utcToLocalDateString(params.value),
+                filter: 'agDateColumnFilter',
+                width: 150
+            },
+            {
+                headerName: "Resultado",
+                field: "managementResult",
+                width: 200
+            },
+            {
+                headerName: "Notas",
+                field: "notes",
+                width: 300,
+                valueGetter: params => params.data.notes || 'Sin notas', // Asegurarse de que notes no sea undefined
+                // Opcional: limitar el texto y mostrar tooltip
+                cellRenderer: params => {
+                    const notes = params.value || '';
+                    const maxLength = 50; // Limite de caracteres para mostrar directamente
+                    if (notes.length > maxLength) {
+                        return `<span title="${notes}">${notes.substring(0, maxLength)}...</span>`;
+                    }
+                    return notes;
+                },
+            },
+            {
+                headerName: "Cobrador ",
+                filter: 'agTextColumnFilter',
+                field: "collector.id", // Asumiendo que CollectionManagement tiene una propiedad Collector
+                valueGetter: params => params.data.collector?.userName || params.data.collector?.id || '',
+                width: 150
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const collectionManagementGridDiv = document.querySelector('#collectionManagementGrid');
+
+            if (collectionManagementGridDiv) {
+                const rowData = @Html.Raw(Json.Serialize(Model.CollectionManagements));
+                const collectionManagementGridOptions = getGridOptions(collectionManagementColumnDefs, rowData);
+                agGrid.createGrid(collectionManagementGridDiv, collectionManagementGridOptions);
+            } else {
+                console.error('El elemento #collectionManagementGrid no fue encontrado en el DOM.');
             }
         });
     </script>

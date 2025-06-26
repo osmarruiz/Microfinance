@@ -29,7 +29,7 @@ public class Installment
     [Range(0, double.MaxValue, ErrorMessage = "El interes moratorio no puede ser negativo")]
     [Column("late_interest_amount")]
     [Precision(10, 2)]
-    public decimal LateInterestAmount { get; set; } = 0;
+    public decimal LateInterestAmount { get; set; }
     
     [Column("paid_amount")]
     [Precision(10, 2)]
