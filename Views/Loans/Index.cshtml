@@ -113,7 +113,6 @@
             }
         ];
         
-        console.log(@Html.Raw(Json.Serialize(Model)));
         const gridOptions = getGridOptions(columnDefs, @Html.Raw(Json.Serialize(Model)));
 
         const gridDiv = document.querySelector('#loanGrid');
