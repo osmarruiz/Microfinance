@@ -22,6 +22,16 @@ public class DashboardController : Controller
 
 public async Task<IActionResult> Index()
 {
+    // Verificar el rol del usuario
+    var isAdmin = User.IsInRole("Admin");
+    var isSalesperson = User.IsInRole("Salesperson");
+
+    // Si es Salesperson, redirigir a la vista simplificada
+    if (isSalesperson && !isAdmin)
+    {
+        return View("SalesDashboard");
+    }
+
     // Usar DateTimeOffset.UtcNow para todas las fechas
     var now = DateTimeOffset.UtcNow;
     
