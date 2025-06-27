@@ -1,29 +1,11 @@
 ﻿@{
-    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
-    {
-        Layout = parentLayout.ToString();
-    }
-    else
-    {
-        Layout = "/Views/Shared/_Layout.cshtml";
-    }
+    
+        Layout = "/Views/Shared/_LayoutApp.cshtml";
 }
 
-<div class="g-sidenav-show ">
-    <div class="min-height-100 bg-dark position-absolute w-100" style="z-index: -1;"></div>
-    <partial name="_ManageNav"/>
-    <div class="main-content ">
-        <partial name="/Views/Shared/_NavbarPartial.cshtml"/>
-
-        <div class="py-1 px-3 mx-4 mt-6">
-            @RenderBody()
-        </div>
-    </div>
+<div class="identity-content-container">
+    @RenderBody()
 </div>
+    
 
-
-
-
-@section Scripts {
-    @RenderSection("Scripts", required: false)
-}
+@RenderSection("Scripts", required: false)

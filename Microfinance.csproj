@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include="Models\Business\" />
+    <Folder Include="wwwroot\img\" />
   </ItemGroup>
 
 </Project>
