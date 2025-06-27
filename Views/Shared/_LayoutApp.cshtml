@@ -8,7 +8,7 @@
     
 </head>
 <body class="g-sidenav-show   bg-gray-100">
-<div class="min-height-100 bg-dark position-absolute w-100" style="z-index: -1;"></div>  
+<div class="min-height-300 bg-dark position-absolute w-100" style="z-index: -1;"></div>  
 @await Html.PartialAsync("_SideBarPartial")
 <main role="main" class="main-content position-relative border-radius-lg">
     @await Html.PartialAsync("_NavBarPartial")
@@ -21,5 +21,22 @@
 
 @await Html.PartialAsync("_ScriptPartial")
 @await RenderSectionAsync("Scripts", required: false)
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const greetingElement = document.getElementById('dynamicGreeting');
+        const hour = new Date().getHours();
+        let greeting;
+        
+        if (hour >= 6 && hour < 12) {
+            greeting = 'Buenos días ☀';
+        } else if (hour >= 12 && hour < 19) {
+            greeting = 'Buenas tardes 🌤';
+        } else {
+            greeting = 'Buenas noches 🌙';
+        }
+        
+        greetingElement.textContent = greeting;
+    });
+</script>
 </body>
 </html>

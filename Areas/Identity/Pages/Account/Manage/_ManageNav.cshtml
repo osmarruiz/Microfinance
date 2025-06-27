@@ -7,7 +7,7 @@
     // Función para determinar active state en páginas Razor
     string IsActivePage(string page)
     {
-        return ViewContext.RouteData.Values["Page"]?.ToString().Contains(page) == true ? "active" : "";
+        return ViewContext.RouteData.Values["Page"]?.ToString().Contains(page) == true ? "active sidenav-active" : "";
     }
     
     // Función para determinar active state en controllers MVC
@@ -17,97 +17,139 @@
         var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
         
         if (string.IsNullOrEmpty(action))
-            return currentController == controller ? "active" : "";
+            return currentController == controller ? "active sidenav-active" : "";
         
-        return (currentController == controller && currentAction == action) ? "active" : "";
+        return (currentController == controller && currentAction == action) ? "active sidenav-active" : "";
     }
 }
 
 <style>
-    /* Estilos para el hover y active */
-    .nav-link {
+    /* 🔥 Estilos EXCLUSIVOS para el sidenav (no afectan otros menús) */
+    #sidenav-main .nav-link.sidenav-custom {
         transition: all 0.3s ease;
         border-radius: 0.375rem;
         margin: 0.25rem 0.5rem;
         padding: 0.5rem 1rem;
     }
 
-    .nav-link:hover {
+    #sidenav-main .nav-link.sidenav-custom:hover {
         background-color: rgba(0, 0, 0, 0.05);
         transform: translateX(3px);
     }
 
-    .nav-link.active {
+    #sidenav-main .nav-link.sidenav-custom.active,
+    #sidenav-main .nav-link.sidenav-custom.sidenav-active {
         background-color: #5e72e4;
+        color: white !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
-    
-    .nav-link.active i {
-        color: #5e72e4 !important;
+
+    #sidenav-main .nav-link.sidenav-custom.active i,
+    #sidenav-main .nav-link.sidenav-custom.sidenav-active i {
+        color: white !important;
     }
 
-    .nav-link-text {
+    #sidenav-main .sidenav-link-text {
         transition: all 0.3s ease;
     }
 
-    .nav-link:hover .nav-link-text {
+    #sidenav-main .nav-link.sidenav-custom:hover .sidenav-link-text {
         font-weight: 600;
+    }
+
+    /* Ajuste para el header del usuario */
+    #sidenav-main .sidenav-header .nav-link.sidenav-custom {
+        padding: 1rem;
+        margin: 0;
     }
 </style>
 
 <!-- Sidebar Principal -->
 <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main">
-  <div class="sidenav-header">
-    @if (SignInManager.IsSignedIn(User))
-    {
-      <a class="nav-link text-dark p-4" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
-        <span class="fs-6">Hola!</span> <span class="text-bold">@User.Identity?.Name!</span>
-      </a>
-    }
-  </div>
-  <hr class="horizontal dark">
-  <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
-      <ul class="navbar-nav">
-          <li class="nav-item">
-              <a class="nav-link @IsActiveController("Dashboard")" asp-controller="Dashboard" asp-action="Index">
-                  <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                      <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
-                  </div>
-                  <span class="nav-link-text ms-1">Dashboard</span>
-              </a>
-          </li>
-          <!-- Resto de items del sidebar... -->
-          <li class="nav-item">
-              <a class="nav-link @IsActivePage("/Account/Manage/Index")" id="profile" asp-page="./Index">
-                  <i class="ni ni-single-02 me-2"></i>
-                  <span class="nav-link-text">Perfil</span>
-              </a>
-          </li>
-          <li class="nav-item">
-              <a class="nav-link @IsActivePage("/Account/Manage/ChangePassword")" id="change-password" asp-page="./ChangePassword">
-                  <i class="ni ni-lock-circle-open me-2"></i>
-                  <span class="nav-link-text">Contraseña</span>
-              </a>
-          </li>
-          @if (hasExternalLogins)
-          {
-              <li id="external-logins" class="nav-item">
-                  <a id="external-login" class="nav-link @IsActivePage("/Account/Manage/ExternalLogins")" asp-page="./ExternalLogins">
-                      <i class="ni ni-world-2 me-2"></i>
-                      <span class="nav-link-text">Logins externos</span>
-                  </a>
-              </li>
-          }
-          <li class="nav-item">
-              <a class="nav-link @IsActivePage("/Account/Manage/TwoFactorAuthentication")" id="two-factor" asp-page="./TwoFactorAuthentication">
-                  <i class="ni ni-key-25 me-2"></i>
-                  <span class="nav-link-text">Autenticación doble factor</span>
-              </a>
-          </li>
-          
-      </ul>
-  </div>
-  
-  
+    <div class="sidenav-header">
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <a class="nav-link sidenav-custom text-dark p-4"  title="Manage">
+                <span class="fs-6" id="dynamicGreeting"></span> <span class="text-bold">@User.Identity?.Name</span>
+            </a>
+        }
+    </div>
+    <hr class="horizontal dark">
+    <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
+        <ul class="navbar-nav">
+            <!-- Sección Principal -->
+            <li class="nav-item">
+                <a class="nav-link sidenav-custom @IsActiveController("Dashboard")" asp-controller="Dashboard" asp-action="Index">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
+                    </div>
+                    <span class="sidenav-link-text ms-1">Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Sección de Gestión de Cuenta -->
+            <hr class="horizontal dark">
+            <li class="nav-item">
+                <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/Index")" id="profile" asp-page="./Index">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
+                    </div>
+                    <span class="sidenav-link-text ms-1">Perfil</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/ChangePassword")" id="change-password" asp-page="./ChangePassword">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-lock-circle-open text-dark text-sm opacity-10"></i>
+                    </div>
+                    <span class="sidenav-link-text ms-1">Contraseña</span>
+                </a>
+            </li>
+            @if (hasExternalLogins)
+            {
+                <li id="external-logins" class="nav-item">
+                    <a id="external-login" class="nav-link sidenav-custom @IsActivePage("/Account/Manage/ExternalLogins")" asp-page="./ExternalLogins">
+                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                            <i class="ni ni-world-2 text-dark text-sm opacity-10"></i>
+                        </div>
+                        <span class="sidenav-link-text ms-1">Logins externos</span>
+                    </a>
+                </li>
+            }
+            <li class="nav-item">
+                <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/TwoFactorAuthentication")" id="two-factor" asp-page="./TwoFactorAuthentication">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-key-25 text-dark text-sm opacity-10"></i>
+                    </div>
+                    <span class="sidenav-link-text ms-1">Autenticación 2FA</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/PersonalData")" id="personal-data" asp-page="./PersonalData">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-settings text-dark text-sm opacity-10"></i>
+                    </div>
+                    <span class="sidenav-link-text ms-1">Datos personales</span>
+                </a>
+            </li>
+        </ul>
+    </div>
 </aside>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const greetingElement = document.getElementById('dynamicGreeting');
+        const hour = new Date().getHours();
+        let greeting;
+        
+        if (hour >= 6 && hour < 12) {
+            greeting = 'Buenos días ☀';
+        } else if (hour >= 12 && hour < 19) {
+            greeting = 'Buenas tardes 🌤';
+        } else {
+            greeting = 'Buenas noches 🌙';
+        }
+        
+        greetingElement.textContent = greeting;
+    });
+</script>

@@ -1,6 +1,229 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model Microfinance.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
+<div class=" ">
+    <div class="row g-4">
+        <!-- Tarjeta 1: Préstamos Activos -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-sm text-uppercase text-muted fw-bold mb-1">Préstamos Activos</p>
+                            <h2 class="fw-bold text-primary">@Model.TotalActiveLoans</h2>
+
+                        </div>
+                        <div class="bg-gradient-primary p-2 rounded-circle shadow-sm">
+                            <i class="ni ni-money-coins text-white fs-4 p-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 2: Clientes Activos -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card shadow-lg border-0 rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-sm text-uppercase text-muted fw-bold mb-1">Clientes Activos</p>
+                            <h2 class="fw-bold text-danger">@Model.TotalCustomers</h2>
+
+                        </div>
+
+                        <div class=" bg-gradient-danger p-2 rounded-circle shadow-sm ">
+                            <i class="ni ni-single-02  fs-4 text-white p-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 3: Cobros esta semana -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-sm text-uppercase text-muted fw-bold mb-1">Cobros esta semana</p>
+                            <h4 class="fw-bold text-success">C$@Model.TotalPaymentsThisWeek</h4>
+                            <p class="mb-0 text-muted small">
+                                <span class="@(Model.TotalPaymentsThisWeek > 0 ? "text-success" : "text-danger")">
+                                    @(Model.TotalPaymentsThisWeek > 0 ? "+" : "")@(Model.TotalPaymentsThisWeek / 100)% vs semana pasada
+                                </span>
+                            </p>
+                        </div>
+                        <div class="bg-gradient-success p-2 rounded-circle shadow-sm">
+                            <i class="ni ni-credit-card text-white fs-4 p-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 4: Cobros este mes -->
+        <div class="col-xl-3 col-sm-6">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-sm text-uppercase text-muted fw-bold mb-1">Cobros este mes</p>
+                            <h4 class="fw-bold text-warning">C$@Model.TotalCollectedThisMonth</h4>
+                            <p class="mb-0 text-muted small">
+                                <span class="@(Model.TotalCollectedThisMonth > 0 ? "text-success" : "text-danger")">
+                                    @(Model.TotalCollectedThisMonth > 0 ? "+" : "")@(Model.TotalCollectedThisMonth / 1000)% vs mes pasado
+                                </span>
+                            </p>
+                        </div>
+                        <div class="bg-gradient-warning p-2 rounded-circle shadow-sm">
+                            <i class="ni ni-chart-bar-32 text-white fs-4 p-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <!-- Gráfico 1: Préstamos por Estado -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg rounded-4 h-100">
+                <div class="card-header bg-transparent pb-0">
+                    <h6 class="fw-bold">Distribución de Préstamos por Estado</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="loansByStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico 2: Distribución por Frecuencia -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-lg rounded-4 h-100">
+                <div class="card-header bg-transparent pb-0">
+                    <h6 class="fw-bold">Distribución por Frecuencia de Pago</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="loanDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico 3: Historial de Cobros -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-transparent pb-0">
+                    <h6 class="fw-bold">Historial de Cobros (Últimos 6 Meses)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="paymentsLastMonthsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Configuración común para todos los gráficos
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 20
+                    }
+                }
+            }
+        };
+
+        // Gráfico de Préstamos por Estado
+        new Chart(
+            document.getElementById('loansByStatusChart').getContext('2d'),
+            {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.LoansByStatus.Select(x => x.Label))),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.LoansByStatus.Select(x => x.Value))),
+                        backgroundColor: ['#00bcd4', '#ff9800', '#e91e63', '#9c27b0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    cutout: '70%'
+                }
+            }
+        );
+
+        // Gráfico de Historial de Cobros
+        new Chart(
+            document.getElementById('paymentsLastMonthsChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.PaymentsLastSixMonths.Select(x => x.Month))),
+                    datasets: [{
+                        label: 'Monto Cobrado',
+                        data: @Html.Raw(Json.Serialize(Model.PaymentsLastSixMonths.Select(x => x.Amount))),
+                        backgroundColor: '#3f51b5',
+                        borderColor: '#303f9f',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'C$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+        // Gráfico de Distribución por Frecuencia
+        new Chart(
+            document.getElementById('loanDistributionChart').getContext('2d'),
+            {
+                type: 'pie',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.LoanDistribution.Select(x => x.Label))),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.LoanDistribution.Select(x => x.Value))),
+                        backgroundColor: ['#009688', '#8bc34a', '#ffc107', '#ff5722', '#607d8b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    cutout: '50%'
+                }
+            }
+        );
+    </script>
+}
