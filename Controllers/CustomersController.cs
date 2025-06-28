@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microfinance.Controllers
 {
@@ -22,6 +23,10 @@ namespace Microfinance.Controllers
         // GET: Customers
         public async Task<IActionResult> Index()
         {
+            var isAdmin = User.IsInRole("Admin");
+            
+            ViewData["IsAdmin"] = isAdmin;
+            
             return View(await _context.Customers.ToListAsync());
         }
 
@@ -45,6 +50,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Customers/Create
+        [Authorize(Roles = "Admin, Salesperson")]
         public IActionResult Create()
         {
             return View();
@@ -55,6 +61,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin, Salesperson")]
         public async Task<IActionResult> Create([Bind("CustomerId,FullName,IdCard,PhoneNumber,Address,Email,IsActive,IsDeleted")] Customer customer)
         {
             if (ModelState.IsValid)

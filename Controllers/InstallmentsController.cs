@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microfinance.Controllers
 {
+    
+    
     public class InstallmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -20,6 +23,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Installments
+        [Authorize(Roles = "Admin,Consultant" )]
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Installments.Include(i => i.Loan)
@@ -28,6 +32,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Installments/Details/5
+        [Authorize(Roles = "Admin,Salesperson,Consultant" )]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -49,6 +54,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Installments/Create
+        [Authorize(Roles = "Admin,Salesperson")]
         public IActionResult Create()
         {
             ViewData["LoanId"] = new SelectList(_context.Loans, "LoanId", "LoanId");
@@ -60,6 +66,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Salesperson")]
         public async Task<IActionResult> Create([Bind("InstallmentId,LoanId,InstallmentNumber,InstallmentAmount,PaidAmount,LateFee,DueDate,InstallmentStatus,IsDeleted")] Installment installment)
         {
             if (ModelState.IsValid)
@@ -73,6 +80,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Installments/Edit/5
+        [Authorize(Roles = "Admin" )]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -94,6 +102,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin" )]
         public async Task<IActionResult> Edit(int id, [Bind("InstallmentId,LoanId,InstallmentNumber,InstallmentAmount,PaidAmount,LateFee,DueDate,PaymentDate,InstallmentStatus,IsDeleted")] Installment installment)
         {
             if (id != installment.InstallmentId)
@@ -126,6 +135,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Installments/Delete/5
+        [Authorize(Roles = "Admin" )]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -147,6 +157,7 @@ namespace Microfinance.Controllers
         // POST: Installments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin" )]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var installment = await _context.Installments.FindAsync(id);

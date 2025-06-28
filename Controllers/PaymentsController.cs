@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace Microfinance.Controllers
@@ -23,6 +24,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Payments
+        [Authorize(Roles = "Admin,Consultant")]
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Payments.Include(p => p.Collector).Include(p => p.Installment).Where(p => !p.IsDeleted);
@@ -30,6 +32,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Payments/Details/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -50,6 +53,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Payments/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create(int installmentId)
         {
             var installment = _context.Installments
@@ -73,6 +77,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin, Salesperson")]
         public async Task<IActionResult> Create(
             [Bind("PaymentId,InstallmentId,PaidAmount,Reference,CollectorId,IsDeleted")] Payment payment,
             int installmentId)
@@ -96,6 +101,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Payments/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -120,6 +126,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id,
             [Bind("PaymentId,InstallmentId,PaymentDate,PaidAmount,Reference,CollectorId,IsDeleted")] Payment payment)
         {
@@ -157,6 +164,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Payments/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -179,6 +187,7 @@ namespace Microfinance.Controllers
         // POST: Payments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var payment = await _context.Payments.FindAsync(id);

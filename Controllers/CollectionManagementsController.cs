@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace Microfinance.Controllers
 {
+    
     public class CollectionManagementsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,6 +25,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: CollectionManagements
+        [Authorize(Roles = "Admin,Consultant")]
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.CollectionManagements.Include(c => c.Collector).Include(c => c.Loan).Where(c => !c.IsDeleted);
@@ -30,6 +33,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: CollectionManagements/Details/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -50,6 +54,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: CollectionManagements/Create
+        [Authorize(Roles = "Admin,Salesperson")]
         public async Task<IActionResult> Create(int loanId, int installmentId)
         {
             var currentUser = await _userManager.GetUserAsync(User);
@@ -66,6 +71,7 @@ namespace Microfinance.Controllers
 // POST: CollectionManagements/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Salesperson" )]
         public async Task<IActionResult> Create(
             [Bind("CollectionId,LoanId,CollectorId,ManagementResult,Notes,IsDeleted")]
             CollectionManagement collectionManagement,
@@ -107,6 +113,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id,
             [Bind("CollectionId,LoanId,CollectorId,ManagementDate,ManagementResult,Notes,IsDeleted")]
             CollectionManagement collectionManagement)
@@ -144,6 +151,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: CollectionManagements/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -166,6 +174,7 @@ namespace Microfinance.Controllers
         // POST: CollectionManagements/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var collectionManagement = await _context.CollectionManagements.FindAsync(id);

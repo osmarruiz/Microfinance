@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace Microfinance.Controllers
@@ -25,10 +26,23 @@ namespace Microfinance.Controllers
         // GET: Loans
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext =
-                    _context.Loans.Include(l => l.Customer).Include(l => l.Seller).Where(l => !l.IsDeleted)
-                ;
-            return View(await applicationDbContext.ToListAsync());
+            var user = await _userManager.GetUserAsync(User);
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            var isConsultant = await _userManager.IsInRoleAsync(user, "Consultant");
+            
+
+            IQueryable<Loan> loansQuery = _context.Loans
+                .Include(l => l.Customer)
+                .Include(l => l.Seller)
+                .Where(l => !l.IsDeleted);
+
+            if (!isAdmin && !isConsultant)
+            {
+                // Si no es administrador o consultor, filtrar por el vendedor actual
+                loansQuery = loansQuery.Where(l => l.SellerId == user.Id);
+            }
+
+            return View(await loansQuery.ToListAsync());
         }
 
         // GET: Loans/Details/5
@@ -38,6 +52,9 @@ namespace Microfinance.Controllers
             {
                 return NotFound();
             }
+            
+            var isAdmin = User.IsInRole("Admin");
+            ViewData["IsAdmin"] = isAdmin;
 
             var loan = await _context.Loans
                 .Include(l => l.Customer)
@@ -54,6 +71,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Loans/Create
+        [Authorize(Roles = "Admin, Salesperson")]
         public async Task<IActionResult> Create()
         {
             var currentUser = await _userManager.GetUserAsync(User);
@@ -78,6 +96,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin, Salesperson")]
         public async Task<IActionResult> Create(Loan loan)
         {
             var currentUser = await _userManager.GetUserAsync(User);
@@ -119,6 +138,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Loans/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -142,6 +162,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id,
             [Bind(
                 "LoanId,CustomerId,SellerId,Amount,CurrentBalance,InterestRate,TermMonths,StartDate,DueDate,PaymentFrequency,LoanStatus,IsDeleted")]
@@ -180,6 +201,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Loans/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -202,6 +224,7 @@ namespace Microfinance.Controllers
         // POST: Loans/Delete/5[HttpPost, ActionName("Delete")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var loan = await _context.Loans

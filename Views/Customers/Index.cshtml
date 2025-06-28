@@ -8,7 +8,10 @@
     
     <h1 class="mb-0 text-white">@ViewData["Title"]</h1>
 
-    <a class="mb-0 btn btn-primary" asp-action="Create">Registrar un cliente</a>
+    @if (!User.IsInRole("Consultant"))
+    {
+        <a class="mb-0 btn btn-primary" asp-action="Create">Registrar un cliente</a>
+    }
   
 </div>
 
@@ -18,13 +21,19 @@
 @section Scripts {
     <script>
         // Función para crear el renderizador de celdas para las acciones (Edit, Details, Delete)
+        
+
+
         function actionsCellRenderer(params) {
-            const customerId = params.data.customerId; // Asume que CustomerId es la propiedad clave en tu modelo
-            return `
-                <a class="link-primary" href="/Customers/Edit/${customerId}">Editar</a> |
-                <a class="link-secondary" href="/Customers/Details/${customerId}">Detalles</a> |
-                <a class="link-danger" href="/Customers/Delete/${customerId}">Borrar</a>
-            `;
+            const customerId = params.data.customerId;
+            let actionsHtml = `<a class="link-secondary" href="/Customers/Details/${customerId}">Detalles</a>`;
+            // Verificar si el usuario es admin (necesitas pasar esta información al frontend)
+            if (window.currentUser && window.currentUser.isAdmin) {
+                actionsHtml += ` | <a class="link-primary" href="/Customers/Edit/${customerId}">Editar</a>`;
+                actionsHtml += ` | <a class="link-danger" href="/Customers/Delete/${customerId}">Borrar</a>`;
+            }
+
+            return actionsHtml;
         }
 
         // Definición de las columnas de la grilla AG-Grid

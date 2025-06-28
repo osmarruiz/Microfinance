@@ -3,82 +3,95 @@
 @inject UserManager<IdentityUser> UserManager
 
 @{
-    string IsActive(string controller, string action = null)
+  string IsActive(string controller, string action = null)
+  {
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+
+    if (string.IsNullOrEmpty(action))
+      return currentController == controller ? "active sidenav-active" : "";
+
+    return (currentController == controller && currentAction == action) ? "active sidenav-active" : "";
+  }
+
+  async Task<bool> IsUserAdmin()
+  {
+    if (SignInManager.IsSignedIn(User))
     {
-        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
-        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
-        
-        if (string.IsNullOrEmpty(action))
-            return currentController == controller ? "active sidenav-active" : "";
-        
-        return (currentController == controller && currentAction == action) ? "active sidenav-active" : "";
+      var user = await UserManager.GetUserAsync(User);
+      return await UserManager.IsInRoleAsync(user, "Admin");
     }
-    
-    async Task<bool> IsUserAdmin()
+
+    return false;
+  }
+
+  async Task<bool> IsUserConsultant()
+  {
+    if (SignInManager.IsSignedIn(User))
     {
-      if (SignInManager.IsSignedIn(User))
-      {
-        var user = await UserManager.GetUserAsync(User);
-        return await UserManager.IsInRoleAsync(user, "Admin");
-      }
-      return false;
+      var user = await UserManager.GetUserAsync(User);
+      return await UserManager.IsInRoleAsync(user, "Consultant");
     }
-    
-    var currentPath = Context.Request.Path;
-    var hideBreadcrumb = currentPath.StartsWithSegments("/Identity") || 
-                         currentPath.StartsWithSegments("/Account") ||
-                         currentPath.StartsWithSegments("/Manage");
-    
-    string IsActivePage(string page)
-    {
-      return ViewContext.RouteData.Values["Page"]?.ToString().Contains(page) == true ? "active sidenav-active" : "";
-    }
-    
+
+    return false;
+  }
+
+  var currentPath = Context.Request.Path;
+  var hideBreadcrumb = currentPath.StartsWithSegments("/Identity") ||
+                       currentPath.StartsWithSegments("/Account") ||
+                       currentPath.StartsWithSegments("/Manage");
+
+  string IsActivePage(string page)
+  {
+    return ViewContext.RouteData.Values["Page"]?.ToString().Contains(page) == true ? "active sidenav-active" : "";
+  }
 }
 
 <style>
-    /* 🔥 Estilos EXCLUSIVOS para el sidenav (no afectan otros menús) */
-    #sidenav-main .nav-link.sidenav-custom {
-        transition: all 0.3s ease;
-        border-radius: 0.375rem;
-        margin: 0.25rem 0.5rem;
-        padding: 0.5rem 1rem;
-    }
+  /* 🔥 Estilos EXCLUSIVOS para el sidenav (no afectan otros menús) */
+  #sidenav-main .nav-link.sidenav-custom {
+    transition: all 0.3s ease;
+    border-radius: 0.375rem;
+    margin: 0.25rem 0.5rem;
+    padding: 0.5rem 1rem;
+  }
 
-    #sidenav-main .nav-link.sidenav-custom:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        transform: translateX(3px);
-    }
+  #sidenav-main .nav-link.sidenav-custom:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    transform: translateX(3px);
+  }
 
-    #sidenav-main .nav-link.sidenav-custom.sidenav-active {
-        background-color: #5e72e4;
-        color: white !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
+  #sidenav-main .nav-link.sidenav-custom.sidenav-active {
+    background-color: #5e72e4;
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
 
-    #sidenav-main .nav-link.sidenav-custom.sidenav-active i {
-        color: white !important;
-    }
+  #sidenav-main .nav-link.sidenav-custom.sidenav-active i {
+    color: white !important;
+  }
 
-    #sidenav-main .sidenav-link-text {
-        transition: all 0.3s ease;
-    }
+  #sidenav-main .sidenav-link-text {
+    transition: all 0.3s ease;
+  }
 
-    #sidenav-main .nav-link.sidenav-custom:hover .sidenav-link-text {
-        font-weight: 600;
-    }
+  #sidenav-main .nav-link.sidenav-custom:hover .sidenav-link-text {
+    font-weight: 600;
+  }
 
-    /* Ajuste para el ícono de peligro (bg-danger) */
-    #sidenav-main .nav-link.sidenav-custom.bg-danger.sidenav-active {
-        background-color: #dc3545 !important; /* Rojo de Bootstrap */
-    }
+  /* Ajuste para el ícono de peligro (bg-danger) */
+  #sidenav-main .nav-link.sidenav-custom.bg-danger.sidenav-active {
+    background-color: #dc3545 !important; /* Rojo de Bootstrap */
+  }
 </style>
 
-<aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main">
+<aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4"
+       id="sidenav-main">
   <div class="sidenav-header">
     @if (SignInManager.IsSignedIn(User))
     {
-      <a class="nav-link sidenav-custom text-dark p-4" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+      <a class="nav-link sidenav-custom text-dark p-4" asp-area="Identity" asp-page="/Account/Manage/Index"
+         title="Manage">
         <span class="fs-6" id="dynamicGreeting"></span> <span class="text-bold">@User.Identity?.Name</span>
       </a>
     }
@@ -89,35 +102,41 @@
       <!-- Sección Principal -->
       <li class="nav-item">
         <a class="nav-link sidenav-custom @IsActive("Dashboard")" asp-controller="Dashboard" asp-action="Index">
-          <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+          <div
+            class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
             <i class="ni ni-tv-2 text-dark text-sm opacity-10"></i>
           </div>
           <span class="sidenav-link-text ms-1">Dashboard</span>
         </a>
       </li>
-      
+
       @if (hideBreadcrumb)
       {
         <!-- Sección de Gestión de Cuenta -->
         <li class="nav-item">
           <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/Index")" id="profile" asp-page="./Index">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
             </div>
             <span class="sidenav-link-text ms-1">Perfil</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/ChangePassword")" id="change-password" asp-page="./ChangePassword">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+          <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/ChangePassword")" id="change-password"
+             asp-page="./ChangePassword">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-lock-circle-open text-dark text-sm opacity-10"></i>
             </div>
             <span class="sidenav-link-text ms-1">Contraseña</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/TwoFactorAuthentication")" id="two-factor" asp-page="./TwoFactorAuthentication">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+          <a class="nav-link sidenav-custom @IsActivePage("/Account/Manage/TwoFactorAuthentication")" id="two-factor"
+             asp-page="./TwoFactorAuthentication">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-key-25 text-dark text-sm opacity-10"></i>
             </div>
             <span class="sidenav-link-text ms-1">Autenticación 2FA</span>
@@ -128,7 +147,8 @@
       {
         <li class="nav-item">
           <a class="nav-link sidenav-custom @IsActive("Customers")" asp-controller="Customers" asp-action="Index">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
             </div>
             <span class="sidenav-link-text ms-1">Clientes</span>
@@ -136,7 +156,8 @@
         </li>
         <li class="nav-item">
           <a class="nav-link sidenav-custom @IsActive("Loans")" asp-controller="Loans" asp-action="Index">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <div
+              class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
               <i class="ni ni-paper-diploma text-dark text-sm opacity-10"></i>
             </div>
             <span class="sidenav-link-text ms-1">Préstamos</span>
@@ -146,15 +167,14 @@
         <hr class="horizontal dark">
 
 
-
-        @if (await IsUserAdmin())
+        @if (await IsUserAdmin() || await IsUserConsultant())
         {
-
-
           <!-- Gestión de Pagos -->
           <li class="nav-item">
-            <a class="nav-link sidenav-custom @IsActive("Installments")" asp-controller="Installments" asp-action="Index">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <a class="nav-link sidenav-custom @IsActive("Installments")" asp-controller="Installments"
+               asp-action="Index">
+              <div
+                class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-credit-card text-dark text-sm opacity-10"></i>
               </div>
               <span class="sidenav-link-text ms-1">Cuotas</span>
@@ -162,23 +182,31 @@
           </li>
           <li class="nav-item">
             <a class="nav-link sidenav-custom @IsActive("Payments")" asp-controller="Payments" asp-action="Index">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <div
+                class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-money-coins text-dark text-sm opacity-10"></i>
               </div>
               <span class="sidenav-link-text ms-1">Pagos</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link sidenav-custom @IsActive("CollectionManagements")" asp-controller="CollectionManagements" asp-action="Index">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+            <a class="nav-link sidenav-custom @IsActive("CollectionManagements")" asp-controller="CollectionManagements"
+               asp-action="Index">
+              <div
+                class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-book-bookmark text-dark text-sm opacity-10"></i>
               </div>
               <span class="sidenav-link-text ms-1">Gestión de Cobranzas</span>
             </a>
           </li>
+        }
+
+        @if (await IsUserAdmin())
+        {
           <li class="nav-item">
             <a class="nav-link sidenav-custom bg-danger @IsActive("Reports")" href="#">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <div
+                class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-chart-bar-32 text-dark text-sm opacity-10"></i>
               </div>
               <span class="sidenav-link-text ms-1">Reportes</span>
@@ -190,7 +218,8 @@
           <!-- Administración -->
           <li class="nav-item">
             <a class="nav-link sidenav-custom @IsActive("Users")" asp-controller="Users" asp-action="Index">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <div
+                class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-circle-08 text-dark text-sm opacity-10"></i>
               </div>
               <span class="sidenav-link-text ms-1">Usuarios</span>
@@ -198,7 +227,8 @@
           </li>
           <li class="nav-item">
             <a class="nav-link sidenav-custom @IsActive("AuditLogs")" asp-controller="AuditLogs" asp-action="Index">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <div
+                class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-collection text-dark text-sm opacity-10"></i>
               </div>
               <span class="sidenav-link-text ms-1">Auditoría</span>
@@ -206,7 +236,8 @@
           </li>
           <li class="nav-item">
             <a class="nav-link sidenav-custom @IsActive("Backup")" asp-controller="Backup" asp-action="Index">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <div
+                class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="ni ni-folder-17 text-dark text-sm opacity-10"></i>
               </div>
               <span class="sidenav-link-text ms-1">Copias de Seguridad</span>

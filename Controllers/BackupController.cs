@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Microfinance.Controllers;
 
-[Authorize(Roles = "Admin,SuperAdmin")] // Asegúrate de que el usuario tenga los roles necesarios
+[Authorize(Roles = "Admin")] // Asegúrate de que el usuario tenga los roles necesarios
 public class BackupController : Controller
 {
     private readonly ILogger<BackupController> _logger;

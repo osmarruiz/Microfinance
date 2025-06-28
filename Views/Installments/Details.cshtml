@@ -126,7 +126,7 @@
             <!-- Sección de Acciones -->
             <div class="d-flex flex-column flex-md-row justify-content-end mt-4 pt-3 border-top">
                 
-            @if (Model.PaidAmount < Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount)
+            @if (Model.PaidAmount < Model.PrincipalAmount + Model.NormalInterestAmount + Model.LateInterestAmount && !User.IsInRole("Consultant"))
                 {
                     <a asp-action="Create"
                        asp-controller="CollectionManagements"
