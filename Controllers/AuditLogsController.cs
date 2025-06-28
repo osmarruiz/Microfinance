@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microfinance.Data;
 using Microfinance.Models.Business;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microfinance.Controllers
 {
+    [Authorize(Roles = "Admin")]  // Asegúrate de que el usuario tenga los roles necesarios
     public class AuditLogsController : Controller
     {
         private readonly ApplicationDbContext _context;
