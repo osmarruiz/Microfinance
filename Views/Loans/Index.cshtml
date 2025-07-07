@@ -20,12 +20,15 @@
 
 @section Scripts {
     <script>
+
+        window.isAdmin = @Json.Serialize(ViewData["IsAdmin"]);
+        
         function actionsCellRenderer(params) {
             const loanId = params.data.loanId;
             let actionsHtml = `<a class="link-secondary" href="/Loans/Details/${loanId}">Detalles</a>`;
 
             // Verificar si el usuario es admin (necesitas pasar esta información al frontend)
-            if (window.currentUser && window.currentUser.isAdmin) {
+            if (window.isAdmin) {
                 actionsHtml += ` | <a class="link-danger" href="/Loans/Delete/${loanId}">Borrar</a>`;
             }
 

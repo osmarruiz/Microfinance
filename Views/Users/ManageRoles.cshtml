@@ -24,8 +24,11 @@
                             <div class="form-check form-switch">
                                 <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
                                 <input type="hidden" asp-for="@Model.Roles[i].RoleName" />
-                                <input asp-for="@Model.Roles[i].IsSelected" class="form-check-input" role="switch" type="checkbox">
-                                <label class="form-check-label" asp-for="@Model.Roles[i].IsSelected">
+                                <input asp-for="@Model.Roles[i].IsSelected" 
+                                       class="form-check-input role-checkbox" 
+                                       type="checkbox"
+                                       id="role_@i">
+                                <label class="form-check-label" for="role_@i">
                                     @Model.Roles[i].RoleName
                                 </label>
                             </div>
@@ -66,5 +69,25 @@
                     }, false)
                 })
         })()
+
+        // Selección única con checkboxes
+        document.querySelectorAll('.role-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Desmarcar todos los otros checkboxes
+                    document.querySelectorAll('.role-checkbox').forEach(cb => {
+                        if (cb !== this) cb.checked = false;
+                    });
+                }
+            });
+        });
+
+        // Inicializar selección actual (si hay un rol pre-seleccionado)
+        @if (Model.Roles.Any(r => r.IsSelected))
+        {
+        <text>
+        document.querySelector('#role_@Model.Roles.FindIndex(r => r.IsSelected)').checked = true;
+        </text>
+        }
     </script>
 }

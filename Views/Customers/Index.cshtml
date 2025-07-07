@@ -21,14 +21,14 @@
 @section Scripts {
     <script>
         // Función para crear el renderizador de celdas para las acciones (Edit, Details, Delete)
-        
 
+        window.isAdmin = @Json.Serialize(ViewData["IsAdmin"]);
 
         function actionsCellRenderer(params) {
             const customerId = params.data.customerId;
             let actionsHtml = `<a class="link-secondary" href="/Customers/Details/${customerId}">Detalles</a>`;
             // Verificar si el usuario es admin (necesitas pasar esta información al frontend)
-            if (window.currentUser && window.currentUser.isAdmin) {
+            if (window.isAdmin) {
                 actionsHtml += ` | <a class="link-primary" href="/Customers/Edit/${customerId}">Editar</a>`;
                 actionsHtml += ` | <a class="link-danger" href="/Customers/Delete/${customerId}">Borrar</a>`;
             }

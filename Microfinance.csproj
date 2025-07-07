@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
     <PackageReference Include="Google.Apis.SQLAdmin.v1beta4" Version="1.69.0.3798" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.15" />
@@ -25,12 +26,12 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+    <PackageReference Include="QuestPDF" Version="2025.5.1" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Models\Business\" />
-    <Folder Include="wwwroot\img\" />
   </ItemGroup>
 
 </Project>
