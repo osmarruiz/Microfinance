@@ -54,15 +54,22 @@ namespace YourApplication.Controllers
         {
             try
             {
+                // Validaciones de fecha
                 if (startDate > endDate)
                 {
                     TempData["ErrorMessage"] = "La fecha de inicio no puede ser mayor a la fecha final";
                     return RedirectToAction(nameof(Index));
                 }
-        
+
+                if (endDate > DateTime.Now)
+                {
+                    TempData["ErrorMessage"] = "La fecha final no puede ser mayor al día actual";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var reportFormat = format.ToLower() == "excel" ? ReportFormat.Excel : ReportFormat.PDF;
                 var result = await _reportService.GeneratePaymentsReport(startDate, endDate, reportFormat);
-                
+        
                 return File(result.Content, result.ContentType, result.FileName);
             }
             catch (Exception ex)
@@ -78,15 +85,25 @@ namespace YourApplication.Controllers
         {
             try
             {
-                if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+                // Validaciones de fecha
+                if (startDate.HasValue && endDate.HasValue)
                 {
-                    TempData["ErrorMessage"] = "La fecha de inicio no puede ser mayor a la fecha final";
-                    return RedirectToAction(nameof(Index));
+                    if (startDate > endDate)
+                    {
+                        TempData["ErrorMessage"] = "La fecha de inicio no puede ser mayor a la fecha final";
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    if (endDate > DateTime.Now)
+                    {
+                        TempData["ErrorMessage"] = "La fecha final no puede ser mayor al día actual";
+                        return RedirectToAction(nameof(Index));
+                    }
                 }
-        
+
                 var reportFormat = format.ToLower() == "excel" ? ReportFormat.Excel : ReportFormat.PDF;
                 var result = await _reportService.GenerateCollectionsReport(startDate, endDate, reportFormat);
-                
+        
                 return File(result.Content, result.ContentType, result.FileName);
             }
             catch (Exception ex)

@@ -76,76 +76,208 @@ namespace Microfinance.Services
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Préstamos");
 
-            // Encabezado
-            worksheet.Cell(1, 1).Value = "Reporte de Préstamos con Cuotas";
-            worksheet.Range(1, 1, 1, 7).Merge().Style.Font.Bold = true;
-            worksheet.Range(1, 1, 1, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+// 1. Configuración de estilos
+            var titleStyle = workbook.Style;
+            titleStyle.Font.Bold = true;
+            titleStyle.Font.FontSize = 16; // Tamaño más grande para el título principal
+            titleStyle.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            titleStyle.Fill.BackgroundColor = XLColor.FromArgb(79, 129, 189); // Azul corporativo
+            titleStyle.Font.FontColor = XLColor.White;
+            titleStyle.Border.OutsideBorder = XLBorderStyleValues.Medium;
+            titleStyle.Border.OutsideBorderColor = XLColor.DarkBlue;
+
+            var subtitleStyle = workbook.Style;
+            subtitleStyle.Font.Italic = true;
+            subtitleStyle.Font.FontSize = 12;
+            subtitleStyle.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            subtitleStyle.Font.FontColor = XLColor.DarkGray;
+
+// 2. Encabezado principal
+            worksheet.Cell(1, 1).Value = "REPORTE DETALLADO DE PRÉSTAMOS";
+            worksheet.Range(1, 1, 1, 9).Merge().Style =
+                titleStyle; // Ajustado a 9 columnas para coincidir con los datos
+
+// 3. Subtítulo con fecha
+            worksheet.Cell(2, 1).Value = $"Generado el {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
+            worksheet.Range(2, 1, 2, 9).Merge().Style = subtitleStyle;
+
+// 4. Espaciado y configuración inicial
+            worksheet.Row(1).Height = 25; // Altura de fila para el título
+            worksheet.Row(2).Height = 20; // Altura de fila para el subtítulo
+
+// 5. Configuración de página
+            worksheet.PageSetup.PageOrientation = XLPageOrientation.Landscape;
+            worksheet.PageSetup.FitToPages(1, 0); // Ajustar a 1 página de ancho
+            worksheet.PageSetup.Margins.Top = 0.5;
+            worksheet.PageSetup.Margins.Bottom = 0.5;
+            worksheet.PageSetup.Margins.Left = 0.5;
+            worksheet.PageSetup.Margins.Right = 0.5;
+
+            int currentRow = 3; // Fila actual para comenzar los datos
 
             foreach (var loan in loans)
             {
-                var currentRow = worksheet.LastRowUsed()?.RowNumber() + 2 ?? 3;
+                currentRow += 2; // Espacio entre préstamos
 
-                // Información del préstamo
-                worksheet.Cell(currentRow, 1).Value = $"Préstamo #{loan.LoanId}";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Range(currentRow, 1, currentRow, 7).Style.Fill.BackgroundColor = XLColor.LightGray;
+                // Encabezado del préstamo
+                var loanHeaderStyle = workbook.Style;
+                loanHeaderStyle.Font.Bold = true;
+                loanHeaderStyle.Fill.BackgroundColor = XLColor.FromArgb(220, 230, 241);
+                loanHeaderStyle.Font.FontColor = XLColor.FromArgb(47, 84, 150);
+
+                worksheet.Cell(currentRow, 1).Value = $"PRÉSTAMO #{loan.LoanId}";
+                worksheet.Range(currentRow, 1, currentRow, 9).Merge().Style = loanHeaderStyle;
                 currentRow++;
 
+                // Información básica del préstamo
                 worksheet.Cell(currentRow, 1).Value = "Cliente:";
                 worksheet.Cell(currentRow, 2).Value = loan.Customer.FullName;
-                worksheet.Cell(currentRow, 4).Value = "Cédula:";
-                worksheet.Cell(currentRow, 5).Value = loan.Customer.IdCard;
+                worksheet.Cell(currentRow, 6).Value = "Cédula:";
+                worksheet.Cell(currentRow, 7).Value = loan.Customer.IdCard;
                 currentRow++;
 
                 worksheet.Cell(currentRow, 1).Value = "Monto:";
                 worksheet.Cell(currentRow, 2).Value = loan.PrincipalAmount;
                 worksheet.Cell(currentRow, 2).Style.NumberFormat.Format = "C$#,##0.00";
-                worksheet.Cell(currentRow, 4).Value = "Tasa:";
-                worksheet.Cell(currentRow, 5).Value = loan.MonthlyInterestRate / 100;
-                worksheet.Cell(currentRow, 5).Style.NumberFormat.Format = "0.00%";
+                worksheet.Cell(currentRow, 6).Value = "Tasa:";
+                worksheet.Cell(currentRow, 7).Value = loan.MonthlyInterestRate / 100;
+                worksheet.Cell(currentRow, 7).Style.NumberFormat.Format = "0.00%";
                 currentRow++;
 
-                // Encabezados de cuotas
+                // Fechas solo con día/mes/año
+                worksheet.Cell(currentRow, 1).Value = "Inicio:";
+                worksheet.Cell(currentRow, 2).Value = loan.StartDate.Date; // Solo fecha sin hora
+                worksheet.Cell(currentRow, 2).Style.DateFormat.Format = "dd/MM/yyyy";
+                worksheet.Cell(currentRow, 6).Value = "Vencimiento:";
+                worksheet.Cell(currentRow, 7).Value = loan.DueDate.Date; // Solo fecha sin hora
+                worksheet.Cell(currentRow, 7).Style.DateFormat.Format = "dd/MM/yyyy";
                 currentRow++;
-                worksheet.Cell(currentRow, 1).Value = "Cuota #";
-                worksheet.Cell(currentRow, 2).Value = "Vencimiento";
-                worksheet.Cell(currentRow, 3).Value = "Principal";
-                worksheet.Cell(currentRow, 4).Value = "Interés";
-                worksheet.Cell(currentRow, 5).Value = "Estado";
-                worksheet.Cell(currentRow, 6).Value = "Pagado";
-                worksheet.Range(currentRow, 1, currentRow, 6).Style.Font.Bold = true;
-                worksheet.Range(currentRow, 1, currentRow, 6).Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                worksheet.Cell(currentRow, 1).Value = "Estado:";
+                worksheet.Cell(currentRow, 2).Value = loan.LoanStatus;
+                var statusColor = loan.LoanStatus == "Activo" ? XLColor.Green : XLColor.Red;
+                worksheet.Cell(currentRow, 2).Style.Font.FontColor = statusColor;
+                worksheet.Cell(currentRow, 6).Value = "Cuotas Pendientes:";
+                worksheet.Cell(currentRow, 7).Value = loan.Installments.Count(i => i.InstallmentStatus != "Pagada");
+                currentRow++;
+
+                // Encabezados de cuotas (exactamente como los necesitas)
+                currentRow++;
+                var headerStyle = workbook.Style;
+                headerStyle.Font.Bold = true;
+                headerStyle.Fill.BackgroundColor = XLColor.FromArgb(79, 129, 189);
+                headerStyle.Font.FontColor = XLColor.White;
+                headerStyle.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                headerStyle.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                headerStyle.Border.OutsideBorderColor = XLColor.Black;
+
+                // Columnas exactas solicitadas
+                string[] headers =
+                {
+                    "Vencimiento", "Principal", "Interés", "Moratorio", "Total", "Pagado", "Saldo", "Estado", "Pago"
+                };
+
+                // Ajustar índices de columnas para empezar en 1
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    worksheet.Cell(currentRow, i + 1).Value = headers[i];
+                    worksheet.Cell(currentRow, i + 1).Style = headerStyle;
+                }
+
                 currentRow++;
 
                 // Datos de cuotas
                 foreach (var installment in loan.Installments.OrderBy(i => i.InstallmentNumber))
                 {
-                    var dueDate = installment.DueDate.LocalDateTime;
+                    var dueDate = installment.DueDate.Date; // Solo fecha sin hora
+                    var paymentDate = installment.PaymentDate?.Date; // Solo fecha sin hora
+                    var totalAmount = installment.PrincipalAmount + installment.NormalInterestAmount +
+                                      installment.LateInterestAmount;
+                    var balance = totalAmount - installment.PaidAmount;
 
-                    worksheet.Cell(currentRow, 1).Value = installment.InstallmentNumber;
-                    worksheet.Cell(currentRow, 2).Value = dueDate;
-                    worksheet.Cell(currentRow, 2).Style.DateFormat.Format = "dd/MM/yyyy";
-                    worksheet.Cell(currentRow, 3).Value = installment.PrincipalAmount;
-                    worksheet.Cell(currentRow, 4).Value = installment.NormalInterestAmount;
-                    worksheet.Cell(currentRow, 5).Value = installment.InstallmentStatus;
+                    // Ajuste de índices para las columnas solicitadas
+                    worksheet.Cell(currentRow, 1).Value = dueDate;
+                    worksheet.Cell(currentRow, 1).Style.DateFormat.Format = "dd/MM/yyyy";
+
+                    worksheet.Cell(currentRow, 2).Value = installment.PrincipalAmount;
+                    worksheet.Cell(currentRow, 3).Value = installment.NormalInterestAmount;
+                    worksheet.Cell(currentRow, 4).Value = installment.LateInterestAmount;
+                    worksheet.Cell(currentRow, 5).Value = totalAmount;
                     worksheet.Cell(currentRow, 6).Value = installment.PaidAmount;
+                    worksheet.Cell(currentRow, 7).Value = balance;
+                    worksheet.Cell(currentRow, 8).Value = installment.InstallmentStatus;
+                    worksheet.Cell(currentRow, 9).Value = paymentDate;
 
-                    // Formato de moneda
-                    worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "C$#,##0.00";
-                    worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "C$#,##0.00";
-                    worksheet.Cell(currentRow, 6).Style.NumberFormat.Format = "C$#,##0.00";
+                    // Formato de fechas y moneda
+                    worksheet.Cell(currentRow, 9).Style.DateFormat.Format = "dd/MM/yyyy";
+                    for (int col = 2; col <= 7; col++) // Columnas con montos
+                    {
+                        worksheet.Cell(currentRow, col).Style.NumberFormat.Format = "C$#,##0.00";
+                        worksheet.Cell(currentRow, col).Style.NumberFormat.NumberFormatId =
+                            4; // Formato de moneda estándar
+                    }
+
+                    // Solución para los asteriscos en saldo:
+                    if (worksheet.Cell(currentRow, 7).Value.ToString() == "********")
+                    {
+                        worksheet.Cell(currentRow, 7).Value = balance;
+                        worksheet.Cell(currentRow, 7).Style.NumberFormat.Format = "C$#,##0.00";
+                    }
 
                     // Color según estado
+                    var rowRange = worksheet.Range(currentRow, 1, currentRow, 9);
                     if (installment.InstallmentStatus == "Vencida")
-                        worksheet.Range(currentRow, 1, currentRow, 6).Style.Fill.BackgroundColor = XLColor.LightPink;
+                    {
+                        rowRange.Style.Fill.BackgroundColor = XLColor.LightPink;
+                        rowRange.Style.Font.FontColor = XLColor.Red;
+                    }
                     else if (installment.InstallmentStatus == "Pagada")
-                        worksheet.Range(currentRow, 1, currentRow, 6).Style.Fill.BackgroundColor = XLColor.LightGreen;
+                    {
+                        rowRange.Style.Fill.BackgroundColor = XLColor.LightGreen;
+                        rowRange.Style.Font.FontColor = XLColor.DarkGreen;
+                    }
 
                     currentRow++;
                 }
+
+                // Totales del préstamo (ajustados a las nuevas columnas)
+                currentRow++;
+                worksheet.Cell(currentRow, 1).Value = "TOTALES:";
+                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+
+                // Columnas de totales (ajustadas)
+                worksheet.Cell(currentRow, 2).FormulaA1 =
+                    $"SUM(B{currentRow - loan.Installments.Count - 1}:B{currentRow - 1})";
+                worksheet.Cell(currentRow, 3).FormulaA1 =
+                    $"SUM(C{currentRow - loan.Installments.Count - 1}:C{currentRow - 1})";
+                worksheet.Cell(currentRow, 4).FormulaA1 =
+                    $"SUM(D{currentRow - loan.Installments.Count - 1}:D{currentRow - 1})";
+                worksheet.Cell(currentRow, 5).FormulaA1 =
+                    $"SUM(E{currentRow - loan.Installments.Count - 1}:E{currentRow - 1})";
+                worksheet.Cell(currentRow, 6).FormulaA1 =
+                    $"SUM(F{currentRow - loan.Installments.Count - 1}:F{currentRow - 1})";
+                worksheet.Cell(currentRow, 7).FormulaA1 =
+                    $"SUM(G{currentRow - loan.Installments.Count - 1}:G{currentRow - 1})";
+
+                // Formato de totales
+                for (int col = 2; col <= 7; col++)
+                {
+                    worksheet.Cell(currentRow, col).Style.NumberFormat.Format = "C$#,##0.00";
+                    worksheet.Cell(currentRow, col).Style.Font.Bold = true;
+                    worksheet.Cell(currentRow, col).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
             }
 
+// Ajustar columnas
             worksheet.Columns().AdjustToContents();
+
+// Configuración de página
+            worksheet.PageSetup.PageOrientation = XLPageOrientation.Landscape;
+            worksheet.PageSetup.FitToPages(1, 0);
+
+// Solución definitiva para los asteriscos - asegurar ancho de columna
+            worksheet.Columns().Width = 15; // Columna de saldo
+
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
             return stream.ToArray();
@@ -622,7 +754,7 @@ namespace Microfinance.Services
             workbook.SaveAs(stream);
             return stream.ToArray();
         }
-        
+
         public async Task<ReportResult> GenerateLoansSummaryReport(ReportFormat format)
         {
             var loansSummary = await _context.Loans
@@ -649,7 +781,7 @@ namespace Microfinance.Services
 
                 using var stream = new MemoryStream();
                 report.GeneratePdf(stream);
-        
+
                 return new ReportResult
                 {
                     Content = stream.ToArray(),
@@ -667,7 +799,7 @@ namespace Microfinance.Services
                 };
             }
         }
-        
+
         private byte[] GenerateLoansSummaryExcel(List<LoanSummaryDto> loansSummary)
         {
             using var workbook = new XLWorkbook();
@@ -701,9 +833,9 @@ namespace Microfinance.Services
             // Totales
             worksheet.Cell(row, 1).Value = "TOTALES:";
             worksheet.Cell(row, 1).Style.Font.Bold = true;
-            worksheet.Cell(row, 3).FormulaA1 = $"SUM(C4:C{row-1})";
+            worksheet.Cell(row, 3).FormulaA1 = $"SUM(C4:C{row - 1})";
             worksheet.Cell(row, 3).Style.NumberFormat.Format = "$#,##0.00";
-            worksheet.Cell(row, 4).FormulaA1 = $"AVERAGE(D4:D{row-1})";
+            worksheet.Cell(row, 4).FormulaA1 = $"AVERAGE(D4:D{row - 1})";
             worksheet.Cell(row, 4).Style.NumberFormat.Format = "$#,##0.00";
 
             worksheet.Columns().AdjustToContents();
