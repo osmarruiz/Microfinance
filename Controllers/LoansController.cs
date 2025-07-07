@@ -30,6 +30,7 @@ namespace Microfinance.Controllers
             var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
             var isConsultant = await _userManager.IsInRoleAsync(user, "Consultant");
             
+            ViewData["IsAdmin"] = isAdmin;
 
             IQueryable<Loan> loansQuery = _context.Loans
                 .Include(l => l.Customer)

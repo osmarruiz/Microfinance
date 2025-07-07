@@ -61,7 +61,7 @@ BEGIN
 
     IF decimal_part <= 0.39 THEN
         NEW.late_interest_amount := integer_part + 0.00;
-    ELSIF decimal_part >= 0.60 THEN
+    ELSIF decimal_part > 0.39 THEN
         NEW.late_interest_amount := integer_part + 1.00;
     END IF;
 

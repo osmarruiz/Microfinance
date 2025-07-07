@@ -1,0 +1,209 @@
+﻿@* Views/Reports/Index.cshtml *@
+@{
+    ViewData["Title"] = "Generar Reportes";
+}
+
+<style>
+        .card {
+            transition: transform 0.2s;
+        }
+        .rounded-circle {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title">
+                <i class="fas fa-file-export me-2"></i>@ViewData["Title"]
+            </h3>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <!-- Reporte 1: Préstamos con cuotas -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="ni ni-paper-diploma fs-4 text-white"></i>
+                            </div>
+                            <h5 class="card-title">Préstamos con Cuotas</h5>
+                            <p class="card-text text-muted small mb-3">Reporte detallado de un préstamo con sus cuotas</p>
+            
+                            <form asp-action="LoanWithInstallmentsReport" method="get" class="row g-2">
+                                <div class="col-12">
+                                    <input type="number" name="loanId" class="form-control form-control-sm" 
+                                           placeholder="ID del préstamo (dejar vacío para todos)" >
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" name="format" value="pdf" 
+                                            class="btn btn-primary btn-sm w-100">
+                                        <i class="fas fa-file-pdf me-1"></i> PDF
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" name="format" value="excel" 
+                                            class="btn btn-success btn-sm w-100">
+                                        <i class="fas fa-file-excel me-1"></i> Excel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reporte 2: Pagos -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="bg-info bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="ni ni-money-coins fs-4 text-white"></i>
+                            </div>
+                            <h5 class="card-title">Reporte de Pagos</h5>
+                            <p class="card-text text-muted small">Todos los pagos realizados en un período</p>
+                            <form asp-action="PaymentsReport" method="get" class="row g-2">
+                                <div class="col-md-6">
+                                    <label>Fecha Inicio</label>
+                                    <input type="date" name="startDate" class="form-control form-control-sm"
+                                           value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")">
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Fecha Fin</label>
+                                    <input type="date" name="endDate" class="form-control form-control-sm"
+                                           value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" name="format" value="pdf" 
+                                            class="btn btn-primary btn-sm w-100">
+                                        <i class="fas fa-file-pdf me-1"></i> PDF
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" name="format" value="excel" 
+                                            class="btn btn-success btn-sm w-100">
+                                        <i class="fas fa-file-excel me-1"></i> Excel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reporte 3: Gestión de cobros -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="bg-warning bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="ni ni-chart-bar-32 fs-4 text-white"></i>
+                            </div>
+                            <h5 class="card-title">Gestión de Cobros</h5>
+                            <p class="card-text text-muted small">Gestiones realizadas por los cobradores</p>
+                            <form asp-action="CollectionsReport" method="get" class="row g-2">
+                                <div class="col-md-6">
+                                    <label>Fecha Inicio</label>
+                                    <input type="date" name="startDate" class="form-control form-control-sm"
+                                           value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")">
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Fecha Fin</label>
+                                    <input type="date" name="endDate" class="form-control form-control-sm"
+                                           value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" name="format" value="pdf" 
+                                            class="btn btn-primary btn-sm w-100">
+                                        <i class="fas fa-file-pdf me-1"></i> PDF
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" name="format" value="excel" 
+                                            class="btn btn-success btn-sm w-100">
+                                        <i class="fas fa-file-excel me-1"></i> Excel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reporte 4: Cuotas vencidas -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="bg-danger bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="ni ni-chart-bar-32 fs-4 text-white"></i>
+                            </div>
+                            <h5 class="card-title">Cuotas Vencidas</h5>
+                            <p class="card-text text-muted small">Listado de cuotas con pagos pendientes</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="@Url.Action("OverdueInstallmentsReport", new { format = "pdf" })" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-file-pdf me-1"></i> PDF
+                                </a>
+                                <a href="@Url.Action("OverdueInstallmentsReport", new { format = "excel" })" 
+                                   class="btn btn-success btn-sm">
+                                    <i class="fas fa-file-excel me-1"></i> Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reporte 5: Desempeño de cobradores -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="bg-success bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="ni ni-paper-diploma fs-4 text-white"></i>
+                            </div>
+                            <h5 class="card-title">Desempeño de Cobradores</h5>
+                            <p class="card-text text-muted small">Efectividad por cobrador</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="@Url.Action("CollectorsPerformanceReport", new { format = "pdf" })" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-file-pdf me-1"></i> PDF
+                                </a>
+                                <a href="@Url.Action("CollectorsPerformanceReport", new { format = "excel" })" 
+                                   class="btn btn-success btn-sm">
+                                    <i class="fas fa-file-excel me-1"></i> Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reporte 6: Resumen de préstamos -->
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="bg-secondary bg-opacity-10 p-3 rounded-circle d-inline-block mb-3">
+                                <i class="ni ni-chart-bar-32 fs-4 text-white"></i>
+                            </div>
+                            <h5 class="card-title">Resumen de Préstamos</h5>
+                            <p class="card-text text-muted small">Estadísticas generales de cartera</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="@Url.Action("LoansSummaryReport", new { format = "pdf" })" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-file-pdf me-1"></i> PDF
+                                </a>
+                                <a href="@Url.Action("LoansSummaryReport", new { format = "excel" })" 
+                                   class="btn btn-success btn-sm">
+                                    <i class="fas fa-file-excel me-1"></i> Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    

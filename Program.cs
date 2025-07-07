@@ -10,8 +10,11 @@ using Microfinance.Workers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -36,6 +39,7 @@ builder.Services.AddHostedService<LateInterestCalculatorService>();
 builder.Services.AddHostedService<LoanStatusBackgroundService>();
 builder.Services.AddHostedService<InstallmentStatusBackgroundService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<ReportService>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login"; // O la ruta de tu vista de login si no usas las vistas por defecto de Identity

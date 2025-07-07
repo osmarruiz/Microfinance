@@ -8,12 +8,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Microfinance</title>
     @await Html.PartialAsync("_HeadPartial")
-    
+    <style>
+        .bg-dark{
+            background-color: #033180 !important;
+        }
+    </style>
     
     
 </head>
 <body class="g-sidenav-show   bg-gray-100 ">
-<div class="min-height-300 bg-dark position-absolute w-100" style="z-index: -1;"></div>  
+<div class="position-absolute w-100 min-height-300" 
+     style="z-index: -1;
+            background-image: url('/img/background.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;">
+</div>
 
     
     @await Html.PartialAsync("_SideBarPartial")
