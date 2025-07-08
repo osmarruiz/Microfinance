@@ -30,6 +30,7 @@ public class LoansSummaryPdfReport : IDocument
                 .Text(text => text.Span("Resumen de Préstamos").Bold().FontSize(16));
 
             page.Content()
+                .PaddingTop(15)
                 .Table(table =>
                 {
                     table.ColumnsDefinition(columns =>
@@ -54,14 +55,14 @@ public class LoansSummaryPdfReport : IDocument
                     {
                         table.Cell().Text(text => text.Span(summary.Status));
                         table.Cell().Text(text => text.Span(summary.Count.ToString()));
-                        table.Cell().Text(text => text.Span($"${summary.TotalAmount:N2}"));
+                        table.Cell().Text(text => text.Span($"C${summary.TotalAmount:N2}"));
                         table.Cell().Text(text => text.Span($"${summary.AverageAmount:N2}"));
                     }
 
                     // Totales
                     table.Cell().ColumnSpan(2).Text(text => text.Span("TOTALES:").Bold());
-                    table.Cell().Text(text => text.Span($"${_loansSummary.Sum(x => x.TotalAmount):N2}").Bold());
-                    table.Cell().Text(text => text.Span($"${_loansSummary.Average(x => x.AverageAmount):N2}").Bold());
+                    table.Cell().Text(text => text.Span($"C${_loansSummary.Sum(x => x.TotalAmount):N2}").Bold());
+                    table.Cell().Text(text => text.Span($"C${_loansSummary.Average(x => x.AverageAmount):N2}").Bold());
                 });
 
             page.Footer()

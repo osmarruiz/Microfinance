@@ -35,14 +35,20 @@ namespace YourApplication.Controllers
         {
             try
             {
+                // Validar que loanId no sea nulo
+                if (!loanId.HasValue)
+                {
+                    TempData["ErrorMessage"] = "Debe especificar un ID de préstamo para generar el reporte";
+                    return RedirectToAction(nameof(Index));
+                }
+                
                 var reportFormat = format.ToLower() == "excel" ? ReportFormat.Excel : ReportFormat.PDF;
                 var result = await _reportService.GenerateLoanWithInstallmentsReport(loanId, reportFormat);
-                
+        
                 return File(result.Content, result.ContentType, result.FileName);
             }
             catch (Exception ex)
             {
-                // Log the error (you should implement proper logging)
                 TempData["ErrorMessage"] = $"Error al generar el reporte: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
