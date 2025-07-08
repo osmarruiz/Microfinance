@@ -31,6 +31,7 @@ public class CollectorsPerformancePdfReport : IDocument
                 .SemiBold().FontSize(16).FontColor(Colors.Blue.Darken3);
 
             page.Content()
+                .PaddingTop(15)
                 .Table(table =>
                 {
                     table.ColumnsDefinition(columns =>

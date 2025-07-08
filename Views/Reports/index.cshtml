@@ -53,13 +53,16 @@
                                 <i class="ni ni-paper-diploma fs-4 text-white"></i>
                             </div>
                             <h5 class="card-title">Préstamos con Cuotas</h5>
-                            <p class="card-text text-muted small mb-3">Reporte detallado de un préstamo con sus cuotas</p>
-            
+                            <p class="card-text text-muted small mb-3">Reporte detallado de un préstamo específico</p>
+
                             <form id="loanWithInstallmentsForm" asp-action="LoanWithInstallmentsReport" method="get" class="row g-2">
                                 <div class="col-12">
                                     <input type="number" name="loanId" id="loanId" class="form-control form-control-sm" 
-                                           placeholder="ID del préstamo (dejar vacío para todos)">
-                                    <span id="loanIdError" class="validation-summary"></span>
+                                           placeholder="Ingrese ID de préstamo" required
+                                           min="1">
+                                    <div id="loanIdError" class="invalid-feedback" style="display:none;">
+                                        Debe ingresar un ID válido
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <button type="submit" name="format" value="pdf" 
@@ -289,6 +292,25 @@
                 if (!isValid) {
                     e.preventDefault();
                 }
+            });
+
+            $('#loanWithInstallmentsForm').submit(function(e) {
+                const loanId = $('#loanId').val();
+                const errorElement = $('#loanIdError');
+
+                // Resetear estado
+                $('#loanId').removeClass('is-invalid');
+                errorElement.hide();
+
+                // Validación
+                if (!loanId || loanId <= 0) {
+                    $('#loanId').addClass('is-invalid');
+                    errorElement.show();
+                    e.preventDefault();
+                    return false;
+                }
+
+                return true;
             });
         });
     </script>
