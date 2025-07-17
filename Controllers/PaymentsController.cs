@@ -53,7 +53,7 @@ namespace Microfinance.Controllers
         }
 
         // GET: Payments/Create
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Salesperson")]
         public IActionResult Create(int installmentId)
         {
             var installment = _context.Installments
@@ -77,7 +77,7 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin, Salesperson")]
+        [Authorize(Roles = "Admin,Salesperson")]
         public async Task<IActionResult> Create(
             [Bind("PaymentId,InstallmentId,PaidAmount,Reference,CollectorId,IsDeleted")] Payment payment,
             int installmentId)
