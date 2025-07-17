@@ -24,10 +24,13 @@ namespace Microfinance.Controllers
         public async Task<IActionResult> Index()
         {
             var isAdmin = User.IsInRole("Admin");
-            
+
             ViewData["IsAdmin"] = isAdmin;
-            
-            return View(await _context.Customers.ToListAsync());
+            var customers = await _context.Customers
+                .Where(c => !c.IsDeleted)
+                .ToListAsync();
+
+            return View(customers);
         }
 
         // GET: Customers/Details/5
@@ -62,7 +65,8 @@ namespace Microfinance.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin, Salesperson")]
-        public async Task<IActionResult> Create([Bind("CustomerId,FullName,IdCard,PhoneNumber,Address,Email,IsActive,IsDeleted")] Customer customer)
+        public async Task<IActionResult> Create(
+            [Bind("CustomerId,FullName,IdCard,PhoneNumber,Address,Email,IsActive,IsDeleted")] Customer customer)
         {
             if (ModelState.IsValid)
             {
@@ -70,6 +74,7 @@ namespace Microfinance.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(customer);
         }
 
@@ -86,6 +91,7 @@ namespace Microfinance.Controllers
             {
                 return NotFound();
             }
+
             return View(customer);
         }
 
@@ -94,8 +100,9 @@ namespace Microfinance.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, 
-            [Bind("CustomerId,FullName,IdCard,PhoneNumber,Address,Email,IsActive")] Customer customer)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("CustomerId,FullName,IdCard,PhoneNumber,Address,Email,IsActive")]
+            Customer customer)
         {
             if (id != customer.CustomerId)
             {
@@ -144,6 +151,7 @@ namespace Microfinance.Controllers
                     }
                 }
             }
+
             return View(customer);
         }
 
@@ -174,28 +182,58 @@ namespace Microfinance.Controllers
         // POST: Customers/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")] // Añadido para consistencia con el otro método
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var customer = await _context.Customers
                 .Include(c => c.Loans.Where(l => !l.IsDeleted))
+                .ThenInclude(l => l.Installments)
+                .ThenInclude(i => i.Payments)
+                .Include(c => c.Loans.Where(l => !l.IsDeleted))
+                .ThenInclude(l => l.CollectionManagements)
                 .FirstOrDefaultAsync(c => c.CustomerId == id);
 
-            if (customer == null)
+            if (customer == null || customer.IsDeleted)
             {
                 return NotFound();
             }
 
-            if (customer.Loans.Any())
+            if (customer.Loans.Any(l => l.LoanStatus != LoanStatusEnum.Cancelado))
             {
-                TempData["ErrorMessage"] = $"No se puede eliminar el cliente porque tiene {customer.Loans.Count} préstamo(s) activo(s). " +
-                                           "Primero debe cancelar y eliminar todos sus préstamos.";
+                int activeLoansCount = customer.Loans.Count(l => l.LoanStatus != LoanStatusEnum.Cancelado);
+                TempData["ErrorMessage"] =
+                    $"No se puede eliminar el cliente porque tiene {activeLoansCount} préstamo(s) no cancelado(s). " +
+                    "Primero debe cancelar todos sus préstamos.";
                 return RedirectToAction(nameof(Delete), new { id });
             }
 
-            _context.Customers.Remove(customer);
+            // Soft delete del cliente
+            customer.IsDeleted = true;
+
+            // Soft delete en cascada de los préstamos y sus relaciones
+            foreach (var loan in customer.Loans)
+            {
+                loan.IsDeleted = true;
+
+                foreach (var installment in loan.Installments)
+                {
+                    installment.IsDeleted = true;
+
+                    foreach (var payment in installment.Payments)
+                    {
+                        payment.IsDeleted = true;
+                    }
+                }
+
+                foreach (var collection in loan.CollectionManagements)
+                {
+                    collection.IsDeleted = true;
+                }
+            }
+
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Cliente eliminado correctamente.";
+            TempData["SuccessMessage"] = "Cliente eliminado correctamente (soft delete).";
             return RedirectToAction(nameof(Index));
         }
 
