@@ -56,14 +56,23 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var googleCloudConfig = builder.Configuration.GetSection("GoogleCloud");
 var projectId = googleCloudConfig["ProjectId"];
-var serviceAccountKeyFilePath = googleCloudConfig["ServiceAccountKeyFilePath"];
+
+var serviceAccountKeyJson = googleCloudConfig["ServiceAccountKey"];
 
 GoogleCredential credential;
-using (var stream = new FileStream(serviceAccountKeyFilePath, FileMode.Open, FileAccess.Read))
+if (!string.IsNullOrEmpty(serviceAccountKeyJson))
 {
-    
-    credential = GoogleCredential.FromStream(stream)
-        .CreateScoped(SQLAdminService.Scope.CloudPlatform); 
+    using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(serviceAccountKeyJson)))
+    {
+        credential = GoogleCredential.FromStream(stream)
+            .CreateScoped(SQLAdminService.Scope.CloudPlatform);
+    }
+}
+else
+{
+    Console.WriteLine("La variable de entorno GoogleCloud__ServiceAccountKey no está configurada. Intentando inferir credenciales por defecto.");
+    credential = GoogleCredential.GetApplicationDefault()
+        .CreateScoped(SQLAdminService.Scope.CloudPlatform);
 }
 
 builder.Services.AddSingleton<ApplicationStatusService>();
