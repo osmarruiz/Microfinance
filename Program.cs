@@ -38,8 +38,13 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
-builder.Services.AddControllersWithViews()
-    .AddRazorRuntimeCompilation(); 
+
+var mvcBuilder = builder.Services.AddControllersWithViews();
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
 builder.Services.AddHostedService<LateInterestCalculatorService>();
@@ -54,25 +59,18 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-var googleCloudConfig = builder.Configuration.GetSection("GoogleCloud");
-var projectId = googleCloudConfig["ProjectId"];
-
-var serviceAccountKeyJson = googleCloudConfig["ServiceAccountKey"];
 
 GoogleCredential credential;
-if (!string.IsNullOrEmpty(serviceAccountKeyJson))
+try
 {
-    using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(serviceAccountKeyJson)))
-    {
-        credential = GoogleCredential.FromStream(stream)
-            .CreateScoped(SQLAdminService.Scope.CloudPlatform);
-    }
-}
-else
-{
-    Console.WriteLine("La variable de entorno GoogleCloud__ServiceAccountKey no está configurada. Intentando inferir credenciales por defecto.");
     credential = GoogleCredential.GetApplicationDefault()
         .CreateScoped(SQLAdminService.Scope.CloudPlatform);
+    Console.WriteLine("Credenciales de Google Cloud cargadas exitosamente (Automáticas o GOOGLE_APPLICATION_CREDENTIALS).");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error al cargar credenciales de Google Cloud: {ex.Message}. Asegúrate de que GOOGLE_APPLICATION_CREDENTIALS esté configurada o que el entorno tenga credenciales por defecto.");
+    throw; // Detén la aplicación si las credenciales son críticas
 }
 
 builder.Services.AddSingleton<ApplicationStatusService>();

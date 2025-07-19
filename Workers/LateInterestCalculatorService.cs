@@ -31,9 +31,11 @@ public class LateInterestCalculatorService : BackgroundService
                     
                     // Obtener cuotas vencidas no pagadas con sus préstamos
                     // Solo cuotas que vencen ANTES de hoy (ayer o antes)
+                    var comparisonDate = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Unspecified);
+                    
                     var overdueInstallments = await dbContext.Installments
                         .Include(i => i.Loan)
-                        .Where(i => i.DueDate.Date < DateTime.UtcNow.Date && 
+                        .Where(i => i.DueDate.Date < comparisonDate && 
                                    i.InstallmentStatus == InstallmentStatusEnum.Vencida &&
                                    i.PaymentDate == null)
                         .ToListAsync(stoppingToken);
